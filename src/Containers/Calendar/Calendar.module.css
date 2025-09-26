@@ -1,0 +1,155 @@
+.video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -1;
+    background-attachment: fixed;
+}
+
+.game h2 {
+    color: white;
+    font-family: "GT Bold";
+}
+
+.goBack {
+    background-color: transparent;
+    border: 1px transparent;
+    display: flex;
+    font-family: "GT Medium";
+    font-size: 1.5em;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.homeRight {
+    border-radius: 20px;
+    padding: 22px 30px 30px 30px;
+    box-sizing: border-box;
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(6px);
+    background: rgba(19, 18, 18, 0.5);
+}
+
+.right {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.goBack * {
+    pointer-events: none;
+}
+
+.goBack:active {
+    transform: scale(0.925);
+}
+
+.arrow {
+    padding-top: 1px;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
+.arrow,
+.goBack {
+    transition: 0.275s all;
+}
+
+header {
+    display: flex;
+    gap: 25px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+header h1 {
+    font-family: "GT Ultrabold";
+    color: white;
+    font-size: 26px;
+    max-width: 535px;
+    transform: scaleY(1.1);
+    letter-spacing: 1px;
+}
+
+.catalogue {
+    padding: 50px;
+    padding-top: 35px;
+}
+
+.game {
+    position: relative;
+    border-radius: 20px;
+    padding: 22px 30px 30px 30px;
+    box-sizing: border-box;
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(6px);
+}
+
+.game::after {
+    content: "";
+    position: absolute;
+    border-radius: 30px;
+    inset: 0.01%;
+    height: inherit;
+    width: inherit;
+    z-index: -1;
+    background: rgba(19, 18, 18, 0.5);
+}
+
+@media only screen and (max-width: 1000px) {
+    .game {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+}
+
+@media screen and (max-width: 675px) {
+    header h1 {
+        font-size: 26px;
+    }
+}
+
+@media screen and (max-width: 590px) {
+    header h1 {
+        font-size: 20px;
+        padding-top: 6px;
+    }
+}
+
+@media screen and (max-width: 590px) {
+    header h1 {
+        font-size: 20px;
+        padding-top: 6px;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    header h1 {
+        font-size: 17px;
+        padding-top: 3px;
+    }
+
+    .goBack {
+        font-size: 20px;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    header h1 {
+        font-size: 12px;
+        padding-top: 3px;
+    }
+
+    header {
+        gap: 20px;
+    }
+}
