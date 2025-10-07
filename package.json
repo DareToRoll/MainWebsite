@@ -2,7 +2,7 @@
   "name": "dare-to-roll",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://bnouailhac.github.io/dare-to-roll/",
+  "homepage": "https://daretoroll.github.io/MainWebsite/",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",

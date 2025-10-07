@@ -9,9 +9,14 @@ import './Resources/fonts/walsheim/GTWalsheimPro-Bold.ttf';
 import { BrowserRouter } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+const basename = process.env.PUBLIC_URL
+  ? new URL(process.env.PUBLIC_URL, window.location.origin).pathname
+  : '/';
+
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename={process.env.PUBLIC_URL}>
+    <BrowserRouter basename={basename}>
         <App />
     </BrowserRouter>
   </React.StrictMode>
