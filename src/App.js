@@ -21,9 +21,9 @@ const navigate = useNavigate();
 const location = useLocation();
 
 useEffect(() => {
-  if (location.pathname !== "/dare-to-roll/" && selectedGame === false) {
-    let surname = location.pathname.substring(7);
-    let currentGame = games.find(game => game.surname === surname);
+  if (!selectedGame && location.pathname.startsWith('/games/')) {
+    const surname = location.pathname.substring('/games/'.length);
+    const currentGame = games.find(game => game.surname === surname);
     if (currentGame !== undefined) {
       setSelectedGame(currentGame);
     }
@@ -73,7 +73,7 @@ const updateLang = (langue) => {
 }
 
 const handleHome = () => {
-  navigate('/dare-to-roll/');
+  navigate('/');
 }
 
 const handleGame = () => {
@@ -109,7 +109,7 @@ const openGamePage = (e) => {
         </video>
         <AnimatePresence mode="wait">
           <Routes key={location.pathname} location={location}>
-            <Route path="/dare-to-roll/" element={<Home
+            <Route path="/" element={<Home
               seed={seed}
               lang={lang}
               updateLang={updateLang}
