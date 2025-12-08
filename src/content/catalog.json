@@ -1,0 +1,27 @@
+{
+  "games": [
+    {
+      "id": "wendigos-chase",
+      "slug": "wendigos-chase",
+      "title": "Wendigo's Chase",
+      "shortDescription": "Un jeu où vous incarnez le Wendigo… puis l’aventurier qu’il traque.",
+      "longDescription": "En 1864, une compagnie d'explorateurs du pays de Cälghan accoste une île inconnue. Ils y envoient des aventuriers dont la mission est claire : trouver une relique dans un temple et la ramener sur la berge. Mais le Wendigo, gardien de l'île, entend bien dévorer ceux qui s'approchent trop près.",
+      "price": "21,92 €",
+      "priceValue": 21.92,
+      "players": {
+        "min": 2,
+        "max": 4
+      },
+      "duration": {
+        "min": 30,
+        "max": 75
+      },
+      "age": 7,
+      "category": "familial",
+      "tags": ["survie", "semi-coopératif", "bluff léger"],
+      "status": "onsell",
+      "isFeatured": true,
+      "image": ""
+    }
+  ]
+}

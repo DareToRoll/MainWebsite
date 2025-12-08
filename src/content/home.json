@@ -1,0 +1,89 @@
+{
+  "hero": {
+    "badges": [
+      { "text": "Édité à Monaco", "variant": "accent" },
+      { "text": "Jeux de société 100 % locaux", "variant": "default" }
+    ],
+    "title": "Des jeux de société créés par des passionnés, au cœur de Monaco.",
+    "subtitle": "Dare to Roll conçoit et édite des jeux de société originaux, pensés pour les soirées entre amis, les familles curieuses et tous ceux qui aiment partager un vrai moment autour d'une table.",
+    "listItems": [
+      "Création et production locales, en principauté de Monaco",
+      "Univers travaillés, règles claires, rejouabilité élevée",
+      "Pensés pour faire rire, réfléchir et rassembler"
+    ],
+    "primaryCtaLabel": "Voir tous nos jeux",
+    "secondaryCtaLabel": "Voir les événements",
+    "meta": [
+      {
+        "label": "Jeux en préparation",
+        "value": "3 créations originales"
+      },
+      {
+        "label": "Production",
+        "value": "100 % locale à Monaco"
+      },
+      {
+        "label": "Soirées tests",
+        "value": "+ de 20 par an"
+      }
+    ]
+  },
+  "featuredGame": {
+    "id": "wendigos-chase",
+    "slug": "wendigos-chase",
+    "title": "Wendigo's Chase",
+    "tagline": "Un jeu où vous incarnez le Wendigo… puis l’aventurier qu’il traque.",
+    "players": "2–4 joueurs",
+    "duration": "30–75 min",
+    "age": "À partir de 7 ans",
+    "status": "Disponible bientôt",
+    "price": "21,92 €",
+    "description": "En 1864, une compagnie d'explorateurs du pays de Cälghan accoste une île inconnue. Ils y envoient 4 aventuriers dont la mission est claire : trouver une relique qui se trouve dans le temple et la ramener sur la berge. Mais le Wendigo, gardien de l'île, entend bien dévorer ceux qui s'approchent trop près.",
+    "note": ""
+  },
+  "games": [
+    {
+      "title": "Wendigo's Chase",
+      "description": "En 1864, sur une île inconnue, vous jouez d’abord le Wendigo puis l’aventurier qu’il traque, entre alliances fragiles, pièges et fuite vers la berge.",
+      "line": "2–4 joueurs · 30–75 min · familial",
+      "price": "21,92 €"
+    }
+  ],
+  "events": [
+    {
+      "id": "monaco-oct-2025",
+      "date": "Octobre 2025",
+      "title": "Soirée découverte à Monaco",
+      "text": "Démonstrations de nos jeux en avant-première dans un café ludique monégasque, avec sessions de test et retours en direct."
+    },
+    {
+      "id": "festival-cotedazur-nov-2025",
+      "date": "Novembre 2025",
+      "title": "Festival du jeu – Côte d'Azur",
+      "text": "Présence sur un stand dédié aux créateurs indépendants, avec animations et tournois sur nos jeux vedettes."
+    },
+    {
+      "id": "events-upcoming",
+      "date": "À venir",
+      "title": "Prochains événements",
+      "text": "Nous mettrons en avant ici les festivals, salons et rencontres où vous pourrez nous retrouver, tester nos jeux et nous rencontrer."
+    }
+  ],
+  "articles": [
+    {
+      "id": "creation-process",
+      "title": "Comment naît un jeu de société chez DTR Games ?",
+      "description": "De l'idée griffonnée sur un carnet aux premières parties publiques, aperçu de notre méthode de travail."
+    },
+    {
+      "id": "playtesting",
+      "title": "Tester un prototype : ce que nous observons vraiment",
+      "description": "Pourquoi les silences à table, les rires et les regards en coin nous en disent plus que les questionnaires."
+    },
+    {
+      "id": "local-production",
+      "title": "Produire localement, un choix assumé",
+      "description": "Impact écologique, contrôle qualité, proximité avec les joueurs : pourquoi nous tenons au 100 % local."
+    }
+  ]
+}
