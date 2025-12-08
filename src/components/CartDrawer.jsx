@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import catalog from '../content/catalog.json'
 import { useCart } from '../context/CartContext'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
 const formatPrice = (amount) =>
 	`${amount.toFixed(2).replace('.', ',')} €`
@@ -17,8 +19,9 @@ const CartDrawer = () => {
 	} = useCart()
 
 	const [pendingRemoveId, setPendingRemoveId] = useState(null)
+	const [draftQuantities, setDraftQuantities] = useState({})
 
-	const entries = Object.entries(items) // [ [gameId, quantity], ... ]
+	const entries = Object.entries(items)
 	const gamesById = useMemo(
 		() => new Map(catalog.games.map((g) => [g.id, g])),
 		[],
@@ -36,21 +39,82 @@ const CartDrawer = () => {
 		[entries, gamesById],
 	)
 
+	const syncDraftWithQuantity = (gameId, quantity) => {
+		setDraftQuantities((prev) => ({
+			...prev,
+			[gameId]: String(quantity),
+		}))
+	}
+
 	const handleDecrement = (gameId, currentQuantity) => {
 		if (currentQuantity > 1) {
-			setItemQuantity(gameId, currentQuantity - 1)
+			const next = currentQuantity - 1
+			setItemQuantity(gameId, next)
+			syncDraftWithQuantity(gameId, next)
 		} else if (currentQuantity === 1) {
 			setPendingRemoveId(gameId)
 		}
 	}
 
 	const handleIncrement = (gameId, currentQuantity) => {
-		setItemQuantity(gameId, currentQuantity + 1)
+		const next = currentQuantity + 1
+		setItemQuantity(gameId, next)
+		syncDraftWithQuantity(gameId, next)
+	}
+
+	const handleDraftChange = (gameId, event) => {
+		const value = event.target.value
+		setDraftQuantities((prev) => ({
+			...prev,
+			[gameId]: value,
+		}))
+	}
+
+	const commitDraft = (gameId, currentQuantity) => {
+		const raw = draftQuantities[gameId]
+		if (raw == null) return
+
+		const trimmed = raw.trim()
+		const parsed = Number.parseInt(trimmed, 10)
+
+		if (Number.isNaN(parsed)) {
+			// revient à la quantité actuelle
+			syncDraftWithQuantity(gameId, currentQuantity)
+			return
+		}
+
+		if (parsed >= 1) {
+			setItemQuantity(gameId, parsed)
+			syncDraftWithQuantity(gameId, parsed)
+		} else if (parsed === 0) {
+			// on ne supprime pas brutalement : on passe par la confirmation
+			setPendingRemoveId(gameId)
+			syncDraftWithQuantity(gameId, currentQuantity)
+		} else {
+			// valeurs négatives : ignore et revient à l'état courant
+			syncDraftWithQuantity(gameId, currentQuantity)
+		}
+	}
+
+	const handleDraftKeyDown = (gameId, currentQuantity, event) => {
+		if (event.key === 'Enter') {
+			event.preventDefault()
+			commitDraft(gameId, currentQuantity)
+		}
+	}
+
+	const handleTrashClick = (gameId) => {
+		setPendingRemoveId(gameId)
 	}
 
 	const handleConfirmRemove = () => {
 		if (pendingRemoveId) {
 			removeItem(pendingRemoveId)
+			setDraftQuantities((prev) => {
+				// suppression du draft associé
+				const { [pendingRemoveId]: _, ...rest } = prev
+				return rest
+			})
 			setPendingRemoveId(null)
 		}
 	}
@@ -105,6 +169,8 @@ const CartDrawer = () => {
 								if (!game) return null
 
 								const isPendingRemoval = pendingRemoveId === gameId
+								const draftValue =
+									draftQuantities[gameId] ?? String(quantity)
 
 								return (
 									<li key={gameId} className="cart-drawer-item">
@@ -120,57 +186,101 @@ const CartDrawer = () => {
 											</p>
 										</div>
 
-										<div className="cart-drawer-item-qty">
-											{!isPendingRemoval ? (
-												<>
-													<label>Quantité</label>
-													<div className="cart-qty-stepper">
-														<button
-															type="button"
-															onClick={() =>
-																handleDecrement(
-																	gameId,
-																	quantity,
-																)
-															}
-															aria-label="Diminuer la quantité"
-														>
-															−
-														</button>
-														<span>{quantity}</span>
-														<button
-															type="button"
-															onClick={() =>
-																handleIncrement(
-																	gameId,
-																	quantity,
-																)
-															}
-															aria-label="Augmenter la quantité"
-														>
-															+
-														</button>
+										<div className="cart-drawer-item-right">
+											<div className="cart-drawer-item-qty">
+												{!isPendingRemoval ? (
+													<>
+														<label>Quantité</label>
+														<div className="cart-qty-stepper">
+															<button
+																type="button"
+																onClick={() =>
+																	handleDecrement(
+																		gameId,
+																		quantity,
+																	)
+																}
+																aria-label="Diminuer la quantité"
+															>
+																−
+															</button>
+															<input
+																type="text"
+																className="cart-qty-input"
+																value={draftValue}
+																onChange={(e) =>
+																	handleDraftChange(
+																		gameId,
+																		e,
+																	)
+																}
+																onBlur={() =>
+																	commitDraft(
+																		gameId,
+																		quantity,
+																	)
+																}
+																onKeyDown={(e) =>
+																	handleDraftKeyDown(
+																		gameId,
+																		quantity,
+																		e,
+																	)
+																}
+																inputMode="numeric"
+																aria-label="Quantité souhaitée"
+															/>
+															<button
+																type="button"
+																onClick={() =>
+																	handleIncrement(
+																		gameId,
+																		quantity,
+																	)
+																}
+																aria-label="Augmenter la quantité"
+															>
+																+
+															</button>
+														</div>
+													</>
+												) : (
+													<div className="cart-remove-confirm">
+														<p>
+															Retirer ce jeu du panier&nbsp;?
+														</p>
+														<div className="cart-remove-actions">
+															<button
+																type="button"
+																onClick={
+																	handleCancelRemove
+																}
+															>
+																Annuler
+															</button>
+															<button
+																type="button"
+																onClick={
+																	handleConfirmRemove
+																}
+															>
+																Retirer
+															</button>
+														</div>
 													</div>
-												</>
-											) : (
-												<div className="cart-remove-confirm">
-													<p>Retirer ce jeu du panier&nbsp;?</p>
-													<div className="cart-remove-actions">
-														<button
-															type="button"
-															onClick={handleCancelRemove}
-														>
-															Annuler
-														</button>
-														<button
-															type="button"
-															onClick={handleConfirmRemove}
-														>
-															Retirer
-														</button>
-													</div>
-												</div>
-											)}
+												)}
+											</div>
+
+											<button
+												type="button"
+												className="cart-item-remove-icon"
+												onClick={() =>
+													handleTrashClick(gameId)
+												}
+												aria-label="Retirer ce jeu du panier"
+											>
+												<FontAwesomeIcon icon={faTrash} />
+											</button>
 										</div>
 									</li>
 								)
