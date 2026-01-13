@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 0.4rem 2rem;
+  padding: 0.5rem 2rem;
   background:
     linear-gradient(to bottom, #4a4036 0%, #554a3f 55%, rgba(85, 74, 63, 0.98) 100%);
   border-bottom: 1px solid rgba(38, 14, 3, 0.2);
@@ -56,11 +56,10 @@
 }
 
 .logo img {
-  height: 45px;
+  height: 42px;
   width: auto;
   object-fit: contain;
   display: block;
-  transform: scale(1.35);
   transform-origin: left center;
 }
 
