@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import './Header.css'
 import cartIcon from '../assets/image/shoppingcart.png'
 import { useCart } from '../context/CartContext'
+import DtrLogo from '../assets/image/LogoDtrWhite.png';
 
 const Header = () => {
 	const { totalItems, toggleCart, hintVisible, hideHint } = useCart();
@@ -10,7 +11,9 @@ const Header = () => {
 		<header className="header">
 			<div className="header-inner">
 				<div className="header-left">
-					<div className="logo">DTR</div>
+					<div className="logo">
+						<img src={DtrLogo} alt="DTR Logo" />
+					</div>
 				</div>
 
 				<nav className="nav header-nav">

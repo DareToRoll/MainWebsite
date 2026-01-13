@@ -1,0 +1,57 @@
+/* About page styles */
+
+.about-page {
+  gap: 2.5rem;
+}
+
+.about-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.about-text p + p {
+  margin-top: 0.75rem;
+}
+
+.about-team {
+  align-self: stretch;
+}
+
+.about-team-title {
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+}
+
+.about-team-text {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.8rem;
+}
+
+.about-team-photo-placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(212, 167, 99, 0.5);
+  background:
+    radial-gradient(circle at top, rgba(212, 167, 99, 0.08), transparent 60%),
+    linear-gradient(135deg, #111218, #151720);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-team-photo-placeholder span {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .about-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

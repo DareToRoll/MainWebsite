@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import './GameCard.css'
 
 const GameCard = ({ game, onAddToCart }) => {
 	const playersText =

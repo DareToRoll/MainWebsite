@@ -3,6 +3,7 @@ import catalog from '../content/catalog.json'
 import { useCart } from '../context/CartContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import './CartDrawer.css'
 
 const formatPrice = (amount) =>
 	`${amount.toFixed(2).replace('.', ',')} €`

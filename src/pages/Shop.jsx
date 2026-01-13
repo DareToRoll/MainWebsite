@@ -2,6 +2,7 @@ import { useState } from 'react'
 import catalog from '../content/catalog.json'
 import GameCard from '../components/GameCard'
 import { useCart } from '../context/CartContext'
+import './Shop.css'
 
 const games = catalog.games
 

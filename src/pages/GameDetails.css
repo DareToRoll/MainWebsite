@@ -1,0 +1,150 @@
+/* Game details page styles */
+
+.game-page {
+  gap: 1.5rem;
+}
+
+.game-detail-carousel {
+  width: 100%;
+  margin-bottom: 1.75rem;
+}
+
+.game-detail-carousel-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* plus large visuellement */
+  border-radius: var(--radius-lg);
+  border: 1px dashed rgba(212, 167, 99, 0.55);
+  background:
+    radial-gradient(circle at top, rgba(212, 167, 99, 0.08), transparent 60%),
+    linear-gradient(135deg, #111218, #151720);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-detail-carousel-placeholder span {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.game-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.game-detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.game-detail-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.game-detail-title {
+  margin-bottom: 0;
+}
+
+.game-detail-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.game-detail-badge {
+  font-size: 0.75rem;
+}
+
+.game-detail-subtitle {
+  margin-bottom: 0;
+}
+
+.game-detail-price-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.game-detail-price {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.game-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.game-detail-meta span {
+  padding: 0.18rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(12, 12, 18, 0.9);
+}
+
+.game-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.game-detail-tag {
+  font-size: 0.78rem;
+  padding: 0.18rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(212, 167, 99, 0.45);
+  background: rgba(18, 18, 23, 0.95);
+}
+
+.game-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.game-detail-section {
+  margin-top: 0.75rem;
+}
+
+.game-detail-section h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.4rem;
+}
+
+.game-detail-section p {
+  margin: 0;
+}
+
+.game-detail-facts ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.game-detail-facts li + li {
+  margin-top: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .game-detail-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .game-detail-price {
+    font-size: 1.2rem;
+  }
+}

@@ -1,6 +1,7 @@
 import Header from './Header'
 import Footer from './Footer'
 import CartDrawer from './CartDrawer'
+import '../styles/layout.css'
 
 const Layout = ({ children }) => {
 	return (

@@ -1,7 +1,53 @@
+import { useState } from 'react'
+import './Contact.css'
+
 export default function Contact() {
-	const handleSubmit = (event) => {
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [status, setStatus] = useState(null)
+
+	const handleSubmit = async (event) => {
 		event.preventDefault()
-		// TODO: intégrer l’envoi du formulaire (API, service externe, etc.)
+		setStatus(null)
+
+		const formData = new FormData(event.target)
+		const payload = {
+			name: formData.get('name'),
+			email: formData.get('email'),
+			topic: formData.get('topic'),
+			message: formData.get('message'),
+		}
+
+		try {
+			setIsSubmitting(true)
+
+			const response = await fetch('/api/contact', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(payload),
+			})
+
+			const json = await response.json()
+
+			if (!response.ok) {
+				throw new Error(json.error || 'Erreur serveur')
+			}
+
+			setStatus({
+				type: 'success',
+				message: 'Votre message a bien été envoyé.',
+			})
+			event.target.reset()
+		} catch (error) {
+			console.error(error)
+			setStatus({
+				type: 'error',
+				message: "Une erreur s'est produite lors de l'envoi. Veuillez réessayer ou réessayer plus tard.",
+			})
+		} finally {
+			setIsSubmitting(false)
+		}
 	}
 
 	return (
@@ -94,9 +140,20 @@ export default function Contact() {
 						/>
 					</div>
 
-					<button type="submit" className="btn btn-primary">
-						Envoyer le message
+					<button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+						{isSubmitting ? 'Envoi en cours...' : 'Envoyer le message'}
 					</button>
+
+					{status && (
+						<p className={
+								status.type === 'success'
+									? 'contact-status contact-status-success'
+									: 'contact-status contact-status-error'
+							}
+						>
+							{status.message}
+						</p>
+					)}
 
 					<p className="contact-form-note">
 						Ce formulaire ne crée pas de compte et ne vous inscrit à aucune

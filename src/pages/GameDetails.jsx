@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import catalog from '../content/catalog.json'
 import { useCart } from '../context/CartContext'
+import './GameDetails.css'
 
 export default function GameDetails() {
 	const { slug } = useParams()
