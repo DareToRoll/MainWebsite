@@ -11,9 +11,9 @@ const Header = () => {
 		<header className="header">
 			<div className="header-inner">
 				<div className="header-left">
-					<div className="logo">
+					<NavLink to="/" end className="logo">
 						<img src={DtrLogo} alt="DTR Logo" />
-					</div>
+					</NavLink>
 				</div>
 
 				<nav className="nav header-nav">

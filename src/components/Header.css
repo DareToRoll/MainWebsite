@@ -2,11 +2,11 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 0.9rem 2rem;
+  padding: 0.4rem 2rem;
   background:
-    linear-gradient(to bottom, #2d1a0f 0%, #3a2418 55%, rgba(58, 36, 24, 0.95) 100%);
-  border-bottom: 1px solid rgba(38, 14, 3, 0.3);
-  box-shadow: var(--shadow-soft);
+    linear-gradient(to bottom, #4a4036 0%, #554a3f 55%, rgba(85, 74, 63, 0.98) 100%);
+  border-bottom: 1px solid rgba(38, 14, 3, 0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(18px);
 }
 
@@ -41,6 +41,18 @@
   align-items: center;
   user-select: none;
   overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+}
+
+.logo:hover {
+  opacity: 0.85;
+  transform: scale(1.02);
+}
+
+.logo:active {
+  transform: scale(0.98);
 }
 
 .logo img {
@@ -54,8 +66,8 @@
 
 .header-icon-button {
   border-radius: 999px;
-  border: 1px solid rgba(212, 167, 99, 0.3);
-  background: rgba(58, 36, 24, 0.8);
+  border: 1px solid rgba(212, 167, 99, 0.35);
+  background: rgba(85, 74, 63, 0.7);
   width: 34px;
   height: 34px;
   padding: 0;
@@ -71,8 +83,8 @@
 }
 
 .header-icon-button:hover {
-  background: rgba(74, 48, 32, 0.9);
-  border-color: rgba(212, 167, 99, 0.5);
+  background: rgba(95, 84, 73, 0.85);
+  border-color: rgba(212, 167, 99, 0.55);
   transform: translateY(-1px);
   box-shadow: var(--shadow-subtle);
 }
@@ -97,7 +109,7 @@
 }
 
 .cart-button:hover {
-  background: rgba(74, 48, 32, 0.9);
+  background: rgba(95, 84, 73, 0.85);
   border: none;
   transform: translateY(-1px);
   box-shadow: var(--shadow-subtle);
@@ -119,7 +131,7 @@
 .nav a {
   position: relative;
   text-decoration: none;
-  color: #b8a99a;
+  color: #d4c5b8;
   font-weight: 500;
   font-size: 0.95rem;
   padding-bottom: 0.2rem;
@@ -134,11 +146,12 @@
   left: 0;
   bottom: -0.25rem;
   width: 0;
-  height: 2px;
+  height: 3px;
   border-radius: 999px;
   background: linear-gradient(90deg, #d4a763, #b2733b);
-  transition: width 0.2s ease-out, opacity 0.2s ease-out;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out;
   opacity: 0;
+  box-shadow: 0 2px 4px rgba(212, 167, 99, 0.4);
 }
 
 .nav a:hover {

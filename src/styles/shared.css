@@ -42,11 +42,30 @@
   background: linear-gradient(135deg, #d4a763, #b2733b);
   color: #18181b;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: none;
+  pointer-events: none;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 6px 16px rgba(212, 167, 99, 0.35);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+  transition: left 0.5s ease-out;
 }
 
 .btn-ghost {
@@ -73,15 +92,13 @@
   transition:
     transform var(--transition-med),
     box-shadow var(--transition-med),
-    border-color var(--transition-med),
-    background-color var(--transition-med);
+    border-color var(--transition-med);
 }
 
 .card:hover {
-  transform: translateY(-1px);
-  border-color: rgba(38, 14, 3, 0.25);
-  box-shadow: var(--shadow-warm);
-  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  border-color: rgba(38, 14, 3, 0.2);
+  box-shadow: 0 8px 20px rgba(38, 14, 3, 0.2);
 }
 
 .card-title {
@@ -116,15 +133,47 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  border: 1px solid rgba(38, 14, 3, 0.3);
+  border: 1.5px solid rgba(38, 14, 3, 0.3);
   color: #260e03;
   background: rgba(245, 241, 232, 0.8);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.badge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: none;
+  pointer-events: none;
+}
+
+.badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(38, 14, 3, 0.12);
+  border-color: rgba(38, 14, 3, 0.4);
+}
+
+.badge:hover::after {
+  left: 100%;
+  transition: left 0.5s ease-out;
 }
 
 .badge-accent {
   border: none;
   background: linear-gradient(135deg, #d4a763, #b2733b);
   color: #18181b;
+  box-shadow: 0 2px 6px rgba(212, 167, 99, 0.3);
+}
+
+.badge-accent:hover {
+  box-shadow: 0 3px 10px rgba(212, 167, 99, 0.4);
+  transform: translateY(-1px);
 }
 
 .link-back {
@@ -132,11 +181,12 @@
   background: transparent;
   color: #260e03;
   font-size: 0.85rem;
-  padding: 0;
+  padding: 0.25rem 0;
   margin-bottom: 0.5rem;
   cursor: pointer;
   text-align: left;
   transition: color var(--transition-fast), transform var(--transition-fast);
+  display: inline-block;
 }
 
 .link-back:hover {

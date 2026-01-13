@@ -101,7 +101,7 @@ export default function GameDetails() {
 					</div>
 				</div>
 
-				{game.tags && game.tags.length > 0 && (
+				{/* {game.tags && game.tags.length > 0 && (
 					<div className="game-detail-tags">
 						{game.tags.map((tag) => (
 							<span key={tag} className="game-detail-tag">
@@ -109,7 +109,7 @@ export default function GameDetails() {
 							</span>
 						))}
 					</div>
-				)}
+				)} */}
 
 				<div className="game-detail-actions">
 					<button
@@ -122,7 +122,7 @@ export default function GameDetails() {
 				</div>
 
 				<section className="game-detail-section">
-					<h2>Ce que propose Wendigo&apos;s Chase</h2>
+					<h2>Plongez dans l&apos;aventure</h2>
 					<p>{game.longDescription}</p>
 				</section>
 

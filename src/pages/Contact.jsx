@@ -36,7 +36,7 @@ export default function Contact() {
 
 			setStatus({
 				type: 'success',
-				message: 'Votre message a bien été envoyé.',
+				message: 'Votre message nous est bien parvenu. On vous répond au plus vite !',
 			})
 			event.target.reset()
 		} catch (error) {
@@ -55,23 +55,22 @@ export default function Contact() {
 			<header className="page-header">
 				<h1 className="page-title">Contactez Dare to Roll</h1>
 				<p className="page-subtitle">
-					Une question sur nos jeux, un événement, une collaboration ou simplement
-					envie d&apos;échanger&nbsp;? Écrivez-nous, nous lisons chaque message.
+					Une question sur nos jeux, une idée folle, une collaboration qui démange ou juste
+					envie de papoter&nbsp;? On adore recevoir vos messages et on lit chacun d&apos;eux avec attention.
 				</p>
 			</header>
 
 			<div className="contact-layout">
 				<div className="contact-intro">
 					<p>
-						Que vous soyez joueur, organisateur d&apos;événements, boutique ou
-						éditeur, nous sommes toujours intéressés par les échanges autour du jeu
-						de société. Vos retours, idées et propositions nous aident à faire
-						évoluer nos créations.
+						Que vous soyez joueur passionné, organisateur d&apos;événements, boutique ou
+						simplement curieux, vos retours nous font grandir. Chaque commentaire, chaque idée
+						et chaque proposition nous aide à peaufiner nos jeux et à imaginer les suivants.
 					</p>
 					<p>
-						Utilisez ce formulaire pour nous envoyer un message détaillé. Nous
-						faisons de notre mieux pour répondre dans des délais raisonnables, en
-						priorisant les demandes liées à nos jeux en cours et aux événements.
+						N&apos;hésitez pas à nous écrire via ce formulaire. On fait notre possible pour répondre
+						rapidement, en privilégiant les demandes liées à nos jeux en cours et aux événements,
+						mais chaque message compte pour nous.
 					</p>
 				</div>
 

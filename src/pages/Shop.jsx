@@ -40,9 +40,8 @@ export default function Shop() {
 				<div>
 					<h1 className="page-title">Nos jeux de société</h1>
 					<p className="page-subtitle">
-						Retrouvez ici les créations Dare to Roll, imaginées et développées à
-						Monaco. Notre catalogue s&apos;enrichira au fil de nos nouvelles
-						aventures ludiques.
+						Voici nos créations, toutes nées à Monaco dans notre petit studio. Le catalogue
+						grandit au gré de nos découvertes et des idées qui nous trottent dans la tête.
 					</p>
 				</div>
 			</header>
@@ -50,8 +49,8 @@ export default function Shop() {
 			{filteredGames.length === 0 ? (
 				<div className="shop-empty">
 					<p>
-						Aucun jeu ne correspond à votre recherche pour le moment. Essayez un
-						autre mot-clé ou réinitialisez le champ de recherche.
+						Oups, aucun jeu ne correspond à votre recherche. Essayez d&apos;autres mots-clés
+						ou réinitialisez le champ de recherche — nos jeux ne demandent qu&apos;à être découverts !
 					</p>
 				</div>
 			) : (
