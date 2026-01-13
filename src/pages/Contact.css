@@ -37,18 +37,18 @@
 
 .form-group label {
   font-size: 0.85rem;
-  color: var(--color-text);
+  color: #260e03;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(12, 12, 18, 0.95);
+  border: 1px solid rgba(38, 14, 3, 0.2);
+  background: rgba(255, 255, 255, 0.95);
   padding: 0.55rem 0.7rem;
   font-size: 0.9rem;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
   outline: none;
   transition:
     border-color var(--transition-fast),
@@ -63,15 +63,16 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: var(--color-text-muted);
+  color: #260e03;
+  opacity: 0.6;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: rgba(212, 167, 99, 0.7);
-  box-shadow: 0 0 0 1px rgba(212, 167, 99, 0.3);
-  background: rgba(15, 15, 22, 0.98);
+  border-color: rgba(38, 14, 3, 0.4);
+  box-shadow: 0 0 0 1px rgba(38, 14, 3, 0.2);
+  background: rgba(255, 255, 255, 1);
 }
 
 .form-group-checkbox {
@@ -83,7 +84,7 @@
   align-items: flex-start;
   gap: 0.45rem;
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .form-group-checkbox input[type="checkbox"] {
@@ -103,7 +104,7 @@
 
 .contact-form-note {
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin: 0.25rem 0 0;
 }
 

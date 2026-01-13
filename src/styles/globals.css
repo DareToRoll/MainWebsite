@@ -13,25 +13,31 @@
 }
 
 :root {
-  --color-bg: #060708;
-  --color-bg-elevated: #101115;
-  --color-bg-soft: #171821;
-  --color-border-subtle: rgba(255, 255, 255, 0.04);
+  /* Warm, board game-inspired color palette */
+  --color-bg: #1a1209; /* Warm dark brown base */
+  --color-bg-elevated: #2a1f15; /* Warmer elevated surface */
+  --color-bg-soft: #3a2e22; /* Softer warm tone */
+  --color-bg-warm: #f5f1e8; /* Warm cream for contrast */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-warm: rgba(38, 14, 3, 0.2); /* Using #260e03 */
 
-  --color-text: #f4f4f2;
-  --color-text-muted: #a1a1aa;
-  --color-accent: #d4a763; /* champagne / doré discret */
-  --color-accent-soft: rgba(212, 167, 99, 0.12);
-  --color-danger: #f97373;
-  --color-success: #4ade80;
+  --color-text: #f5f1e8; /* Warm cream white */
+  --color-text-muted: #b8a99a; /* Warm muted beige */
+  --color-accent: #d4a763; /* Keep the gold accent */
+  --color-accent-soft: rgba(212, 167, 99, 0.15);
+  --color-accent-warm: #c49a5f; /* Slightly warmer gold */
+  --color-warm-dark: #260e03; /* The special color from artist */
+  --color-danger: #d9776c; /* Warmer red */
+  --color-success: #7fb069; /* Warmer green */
 
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-pill: 999px;
 
-  --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.45);
-  --shadow-subtle: 0 6px 18px rgba(0, 0, 0, 0.4);
+  --shadow-soft: 0 10px 25px rgba(38, 14, 3, 0.3); /* Warmer shadows using #260e03 */
+  --shadow-subtle: 0 6px 18px rgba(38, 14, 3, 0.25);
+  --shadow-warm: 0 8px 20px rgba(38, 14, 3, 0.2);
 
   --transition-fast: 0.15s ease-out;
   --transition-med: 0.25s ease-out;
@@ -57,8 +63,9 @@ body {
   font-family: "Walsheim", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   background:
-    radial-gradient(circle at top, #23252f 0, transparent 55%),
-    radial-gradient(circle at bottom, #050608 0, #050608 45%);
+    radial-gradient(circle at top, rgba(58, 46, 34, 0.6) 0, transparent 55%),
+    radial-gradient(circle at bottom, #1a1209 0, #1a1209 45%),
+    linear-gradient(135deg, #2a1f15 0%, #1a1209 100%);
   color: var(--color-text);
   overflow-x: hidden;
 }
@@ -69,7 +76,7 @@ html {
 
 ::selection {
   background: var(--color-accent-soft);
-  color: var(--color-text);
+  color: var(--color-warm-dark);
 }
 
 h1,
@@ -93,6 +100,6 @@ h2 {
 
 p {
   margin: 0 0 0.75rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   line-height: 1.6;
 }

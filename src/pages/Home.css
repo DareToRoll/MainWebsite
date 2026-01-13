@@ -37,7 +37,7 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .home-hero-list li::before {
@@ -63,19 +63,19 @@
 .home-hero-meta-item {
   padding: 0.75rem 0.9rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(17, 18, 24, 0.95);
+  border: 1px solid rgba(38, 14, 3, 0.15);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .home-hero-meta-label {
-  color: var(--color-text-muted);
+  color: #260e03;
   margin: 0 0 0.2rem;
 }
 
 .home-hero-meta-value {
   margin: 0;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
 }
 
 @media (max-width: 768px) {
@@ -112,7 +112,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .home-featured-status {
@@ -121,17 +121,18 @@
   font-size: 0.75rem;
   border: 1px solid rgba(212, 167, 99, 0.7);
   color: #f9f5e7;
-  background: rgba(18, 18, 23, 0.85);
+  background: rgba(245, 241, 232, 0.9);
 }
 
 .home-featured-title {
   font-size: 1.4rem;
   margin: 0.2rem 0 0.25rem;
+  color: var(--color-warm-dark);
 }
 
 .home-featured-tagline {
   font-size: 0.95rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin-bottom: 0.8rem;
 }
 
@@ -143,15 +144,15 @@
   width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-md);
-  border: 1px dashed rgba(212, 167, 99, 0.5);
+  border: 1px dashed rgba(38, 14, 3, 0.3);
   background:
-    radial-gradient(circle at top, rgba(212, 167, 99, 0.12), transparent 60%),
-    linear-gradient(135deg, #111218, #161821);
+    radial-gradient(circle at top, rgba(212, 167, 99, 0.1), transparent 60%),
+    linear-gradient(135deg, #f5f1e8, #faf7f0);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: #6b5d4f;
 }
 
 .home-featured-meta {
@@ -159,20 +160,20 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin-bottom: 0.8rem;
 }
 
 .home-featured-meta span {
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-pill);
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(245, 241, 232, 0.8);
+  border: 1px solid rgba(38, 14, 3, 0.2);
 }
 
 .home-featured-text {
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin-bottom: 1rem;
 }
 
@@ -193,19 +194,19 @@
 .home-featured-price {
   font-size: 1.15rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
 }
 
 .home-featured-price-note {
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .home-featured-note {
   display: block;
   margin-top: 0.4rem;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 @media (max-width: 600px) {
@@ -248,20 +249,20 @@
 .home-card-line {
   font-size: 0.85rem;
   margin-top: 0.4rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .home-card-price {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
   margin: 0.2rem 0 0.1rem;
 }
 
 /* Timeline */
 
 .home-timeline {
-  border-left: 1px solid rgba(148, 163, 184, 0.4);
+  border-left: 1px solid rgba(38, 14, 3, 0.3);
   padding-left: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -281,7 +282,7 @@
   height: 10px;
   border-radius: 999px;
   border: 2px solid var(--color-accent);
-  background: #050608;
+  background: var(--color-warm-dark);
   box-shadow: 0 0 6px rgba(212, 167, 99, 0.55);
 }
 
@@ -289,7 +290,7 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin-bottom: 0.1rem;
 }
 
@@ -297,11 +298,12 @@
   font-size: 0.98rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  color: var(--color-warm-dark);
 }
 
 .home-timeline-text {
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 /* Articles */

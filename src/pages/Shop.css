@@ -20,14 +20,14 @@
 }
 
 .shop-cart-label {
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .shop-cart-pill {
   padding: 0.2rem 0.65rem;
   border-radius: var(--radius-pill);
-  border: 1px solid rgba(212, 167, 99, 0.6);
-  background: rgba(18, 18, 23, 0.95);
+  border: 1px solid rgba(38, 14, 3, 0.3);
+  background: rgba(245, 241, 232, 0.9);
   font-size: 0.8rem;
 }
 
@@ -51,16 +51,16 @@
 
 .shop-search label {
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .shop-search input {
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(12, 12, 18, 0.95);
+  border: 1px solid rgba(38, 14, 3, 0.2);
+  background: rgba(255, 255, 255, 0.95);
   padding: 0.5rem 0.7rem;
   font-size: 0.9rem;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
   outline: none;
   transition:
     border-color var(--transition-fast),
@@ -69,13 +69,14 @@
 }
 
 .shop-search input::placeholder {
-  color: var(--color-text-muted);
+  color: #260e03;
+  opacity: 0.6;
 }
 
 .shop-search input:focus {
-  border-color: rgba(212, 167, 99, 0.7);
-  box-shadow: 0 0 0 1px rgba(212, 167, 99, 0.3);
-  background: rgba(15, 15, 22, 0.98);
+  border-color: rgba(38, 14, 3, 0.4);
+  box-shadow: 0 0 0 1px rgba(38, 14, 3, 0.2);
+  background: rgba(255, 255, 255, 1);
 }
 
 /* Grid */
@@ -89,7 +90,7 @@
 .shop-empty {
   padding: 1rem 0.5rem;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 /* Responsive Shop */

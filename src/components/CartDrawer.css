@@ -22,9 +22,9 @@
   right: 0;
   height: 100vh;
   width: min(360px, 100%);
-  background: linear-gradient(135deg, #111218, #161721);
-  border-left: 1px solid rgba(212, 167, 99, 0.2);
-  box-shadow: -12px 0 30px rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, #faf7f0, #f5f1e8);
+  border-left: 1px solid rgba(38, 14, 3, 0.2);
+  box-shadow: -12px 0 30px rgba(38, 14, 3, 0.3);
   transform: translateX(100%);
   transition: transform 0.25s ease-out;
   z-index: 120;
@@ -47,12 +47,13 @@
 .cart-drawer-header h2 {
   font-size: 1rem;
   margin: 0;
+  color: var(--color-warm-dark);
 }
 
 .cart-drawer-close {
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: #6b5d4f;
   font-size: 1.2rem;
   cursor: pointer;
 }
@@ -65,7 +66,7 @@
 
 .cart-drawer-empty {
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin: 0.5rem 0;
 }
 
@@ -83,7 +84,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding-bottom: 0.6rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  border-bottom: 1px solid rgba(38, 14, 3, 0.15);
 }
 
 .cart-drawer-item-main {
@@ -93,18 +94,19 @@
 .cart-drawer-item-title {
   margin: 0 0 0.2rem;
   font-size: 0.9rem;
+  color: var(--color-warm-dark);
 }
 
 .cart-drawer-item-price {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
 }
 
 .cart-drawer-item-ttc {
   margin-left: 0.25rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: #6b5d4f;
 }
 
 .cart-drawer-item-right {
@@ -126,7 +128,7 @@
   cursor: pointer;
   font-size: .8rem;
   line-height: 1;
-  color: var(--color-text-muted);
+  color: #260e03;
   padding: 0 0 0 0.1rem;
   margin-bottom: .5rem;
 }
@@ -140,15 +142,15 @@
   align-items: center;
   gap: 0.35rem;
   border-radius: var(--radius-pill);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(12, 12, 18, 0.95);
+  border: 1px solid rgba(38, 14, 3, 0.2);
+  background: rgba(255, 255, 255, 0.9);
   padding: 0.15rem 0.4rem;
 }
 
 .cart-qty-stepper button {
   border: none;
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
   font-size: 0.9rem;
   cursor: pointer;
   padding: 0 0.2rem;
@@ -165,7 +167,7 @@
   text-align: center;
   border: none;
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
   font-size: 0.85rem;
   padding: 0;
   outline: none;
@@ -185,7 +187,7 @@
 .cart-remove-confirm p {
   margin: 0 0 0.25rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .cart-remove-actions {
@@ -203,7 +205,7 @@
 }
 
 .cart-remove-actions button:first-child {
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .cart-remove-actions button:last-child {
@@ -212,21 +214,21 @@
 
 .cart-drawer-item-qty label {
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .cart-drawer-item-qty input {
   width: 60px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(12, 12, 18, 0.95);
-  color: var(--color-text);
+  border: 1px solid rgba(38, 14, 3, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--color-warm-dark);
   font-size: 0.85rem;
   padding: 0.2rem 0.35rem;
 }
 
 .cart-drawer-footer {
-  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  border-top: 1px solid rgba(38, 14, 3, 0.15);
   padding-top: 0.6rem;
   margin-top: 0.6rem;
   font-size: 0.8rem;
@@ -243,12 +245,13 @@
 
 .cart-drawer-note {
   margin: 0 0 0.4rem;
-  color: var(--color-text-muted);
+  color: #6b5d4f;
 }
 
 .cart-drawer-total {
   margin: 0;
   font-size: 0.9rem;
+  color: var(--color-warm-dark);
 }
 
 .cart-checkout-btn {
@@ -277,6 +280,6 @@
   padding: 0;
   align-self: flex-start;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   cursor: pointer;
 }

@@ -13,10 +13,10 @@
   width: 100%;
   aspect-ratio: 16 / 9; /* plus large visuellement */
   border-radius: var(--radius-lg);
-  border: 1px dashed rgba(212, 167, 99, 0.55);
+  border: 1px dashed rgba(38, 14, 3, 0.3);
   background:
-    radial-gradient(circle at top, rgba(212, 167, 99, 0.08), transparent 60%),
-    linear-gradient(135deg, #111218, #151720);
+    radial-gradient(circle at top, rgba(212, 167, 99, 0.1), transparent 60%),
+    linear-gradient(135deg, #f5f1e8, #faf7f0);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,7 +24,7 @@
 
 .game-detail-carousel-placeholder span {
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .game-detail-info {
@@ -74,7 +74,7 @@
 .game-detail-price {
   font-size: 1.4rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-warm-dark);
 }
 
 .game-detail-meta {
@@ -82,14 +82,14 @@
   flex-wrap: wrap;
   gap: 0.4rem;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .game-detail-meta span {
   padding: 0.18rem 0.6rem;
   border-radius: var(--radius-pill);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(12, 12, 18, 0.9);
+  border: 1px solid rgba(38, 14, 3, 0.2);
+  background: rgba(245, 241, 232, 0.8);
 }
 
 .game-detail-tags {
@@ -102,8 +102,9 @@
   font-size: 0.78rem;
   padding: 0.18rem 0.6rem;
   border-radius: var(--radius-pill);
-  border: 1px solid rgba(212, 167, 99, 0.45);
-  background: rgba(18, 18, 23, 0.95);
+  border: 1px solid rgba(38, 14, 3, 0.3);
+  background: rgba(245, 241, 232, 0.9);
+  color: var(--color-warm-dark);
 }
 
 .game-detail-actions {
@@ -120,6 +121,7 @@
 .game-detail-section h2 {
   font-size: 1.05rem;
   margin-bottom: 0.4rem;
+  color: var(--color-warm-dark);
 }
 
 .game-detail-section p {
@@ -130,7 +132,7 @@
   margin: 0.4rem 0 0;
   padding-left: 1rem;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 .game-detail-facts li + li {

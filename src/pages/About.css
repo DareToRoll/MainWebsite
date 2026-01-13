@@ -26,7 +26,7 @@
 
 .about-team-text {
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #260e03;
   margin: 0 0 0.8rem;
 }
 
@@ -34,10 +34,10 @@
   width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-md);
-  border: 1px dashed rgba(212, 167, 99, 0.5);
+  border: 1px dashed rgba(38, 14, 3, 0.3);
   background:
-    radial-gradient(circle at top, rgba(212, 167, 99, 0.08), transparent 60%),
-    linear-gradient(135deg, #111218, #151720);
+    radial-gradient(circle at top, rgba(212, 167, 99, 0.1), transparent 60%),
+    linear-gradient(135deg, #f5f1e8, #faf7f0);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,7 +45,7 @@
 
 .about-team-photo-placeholder span {
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: #260e03;
 }
 
 /* Responsive */
