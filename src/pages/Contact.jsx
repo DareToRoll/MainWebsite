@@ -1,25 +1,61 @@
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import './Contact.css'
 
-export default function Contact() {
-	const [isSubmitting, setIsSubmitting] = useState(false)
-	const [status, setStatus] = useState(null)
+// Validation schema
+const contactSchema = z.object({
+	name: z
+		.string()
+		.min(1, 'Le nom est obligatoire')
+		.min(2, 'Le nom doit contenir au moins 2 caractères'),
+	email: z
+		.string()
+		.min(1, 'L\'adresse e-mail est obligatoire')
+		.email({ message: 'Adresse e-mail invalide' }),
+	topic: z
+		.string()
+		.min(1, 'Le sujet est obligatoire'),
+	message: z
+		.string()
+		.min(1, 'Le message est obligatoire')
+		.min(10, 'Le message doit contenir au moins 10 caractères'),
+	website: z.string().optional(), // Honeypot field
+})
 
-	const handleSubmit = async (event) => {
-		event.preventDefault()
+export default function Contact() {
+	const [status, setStatus] = useState(null)
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+		reset,
+	} = useForm({
+		resolver: zodResolver(contactSchema),
+		defaultValues: {
+			topic: 'general',
+			website: '', // Honeypot
+		},
+	})
+
+	const onSubmit = async (data) => {
 		setStatus(null)
 
-		const formData = new FormData(event.target)
+		// Check honeypot field (should be empty)
+		if (data.website) {
+			// Bot detected, silently fail
+			return
+		}
+
 		const payload = {
-			name: formData.get('name'),
-			email: formData.get('email'),
-			topic: formData.get('topic'),
-			message: formData.get('message'),
+			name: data.name.trim(),
+			email: data.email.trim(),
+			topic: data.topic || 'general',
+			message: data.message.trim(),
 		}
 
 		try {
-			setIsSubmitting(true)
-
 			const response = await fetch('/api/contact', {
 				method: 'POST',
 				headers: {
@@ -38,15 +74,13 @@ export default function Contact() {
 				type: 'success',
 				message: 'Votre message nous est bien parvenu. On vous répond au plus vite !',
 			})
-			event.target.reset()
+			reset()
 		} catch (error) {
 			console.error(error)
 			setStatus({
 				type: 'error',
 				message: "Une erreur s'est produite lors de l'envoi. Veuillez réessayer ou réessayer plus tard.",
 			})
-		} finally {
-			setIsSubmitting(false)
 		}
 	}
 
@@ -76,8 +110,9 @@ export default function Contact() {
 
 				<form
 					className="contact-form card"
-					onSubmit={handleSubmit}
+					onSubmit={handleSubmit(onSubmit)}
 					autoComplete="off"
+					noValidate
 				>
 					<div
 						className="contact-honeypot"
@@ -86,10 +121,10 @@ export default function Contact() {
 						<label htmlFor="website">Ne pas remplir ce champ</label>
 						<input
 							id="website"
-							name="website"
 							type="text"
 							tabIndex="-1"
 							autoComplete="off"
+							{...register('website')}
 						/>
 					</div>
 
@@ -98,45 +133,73 @@ export default function Contact() {
 							<label htmlFor="name">Nom complet</label>
 							<input
 								id="name"
-								name="name"
 								type="text"
-								required
 								placeholder="Votre nom et prénom"
+								aria-invalid={errors.name ? 'true' : 'false'}
+								aria-describedby={errors.name ? 'name-error' : undefined}
+								{...register('name')}
 							/>
+							{errors.name && (
+								<span id="name-error" className="form-error" role="alert">
+									{errors.name.message}
+								</span>
+							)}
 						</div>
 
 						<div className="form-group">
 							<label htmlFor="email">Adresse e-mail</label>
 							<input
 								id="email"
-								name="email"
 								type="email"
-								required
 								placeholder="vous@exemple.com"
+								aria-invalid={errors.email ? 'true' : 'false'}
+								aria-describedby={errors.email ? 'email-error' : undefined}
+								{...register('email')}
 							/>
+							{errors.email && (
+								<span id="email-error" className="form-error" role="alert">
+									{errors.email.message}
+								</span>
+							)}
 						</div>
 					</div>
 
 					<div className="form-group">
 						<label htmlFor="topic">Sujet de votre demande</label>
-						<select id="topic" name="topic" defaultValue="general" required>
+						<select
+							id="topic"
+							aria-invalid={errors.topic ? 'true' : 'false'}
+							aria-describedby={errors.topic ? 'topic-error' : undefined}
+							{...register('topic')}
+						>
 							<option value="general">Question générale</option>
 							<option value="game">À propos d&apos;un jeu</option>
 							<option value="event">Événement / soirée jeux</option>
 							<option value="shop">Boutique / distribution</option>
 							<option value="other">Autre</option>
 						</select>
+						{errors.topic && (
+							<span id="topic-error" className="form-error" role="alert">
+								{errors.topic.message}
+							</span>
+						)}
 					</div>
 
 					<div className="form-group">
 						<label htmlFor="message">Votre message</label>
 						<textarea
 							id="message"
-							name="message"
 							rows={5}
-							required
 							placeholder="Expliquez-nous en quelques lignes le contexte de votre demande."
+							aria-invalid={errors.message ? 'true' : 'false'}
+							aria-describedby={errors.message ? 'message-error' : undefined}
+							{...register('message')}
 						/>
+						{errors.message && (
+							<span id="message-error" className="form-error" role="alert">
+								{errors.message.message}
+							</span>
+						)}
 					</div>
 
 					<button type="submit" className="btn btn-primary" disabled={isSubmitting}>

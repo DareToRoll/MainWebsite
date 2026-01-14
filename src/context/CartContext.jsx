@@ -1,11 +1,40 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo, useState, useEffect } from 'react'
 
 const CartContext = createContext(null)
 
+const CART_STORAGE_KEY = 'dtr_cart'
+
+// Load cart from localStorage
+const loadCartFromStorage = () => {
+	try {
+		const stored = localStorage.getItem(CART_STORAGE_KEY)
+		if (stored) {
+			return JSON.parse(stored)
+		}
+	} catch (error) {
+		console.error('Error loading cart from localStorage:', error)
+	}
+	return {}
+}
+
+// Save cart to localStorage
+const saveCartToStorage = (items) => {
+	try {
+		localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+	} catch (error) {
+		console.error('Error saving cart to localStorage:', error)
+	}
+}
+
 export const CartProvider = ({ children }) => {
-	const [items, setItems] = useState({}) // { [gameId]: quantity }
+	const [items, setItems] = useState(() => loadCartFromStorage()) // { [gameId]: quantity }
 	const [isCartOpen, setIsCartOpen] = useState(false)
 	const [hintVisible, setHintVisible] = useState(false)
+
+	// Save cart to localStorage whenever items change
+	useEffect(() => {
+		saveCartToStorage(items)
+	}, [items])
 
 	const addItem = (gameId, quantity = 1) => {
 		setItems((prev) => ({

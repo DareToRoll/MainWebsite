@@ -15,9 +15,14 @@
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
+    "@hookform/resolvers": "^5.2.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.4"
+    "react-hook-form": "^7.71.1",
+    "react-router-dom": "^7.9.4",
+    "swiper": "^12.0.3",
+    "use-debounce": "^10.1.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

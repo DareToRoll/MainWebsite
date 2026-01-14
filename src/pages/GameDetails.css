@@ -1,18 +1,113 @@
 /* Game details page styles */
 
 .game-page {
-  gap: 1.5rem;
+  gap: 2rem;
+}
+
+/* Main layout: side-by-side on desktop, stacked on mobile */
+.game-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.game-detail-image-section {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .game-detail-carousel {
   width: 100%;
-  margin-bottom: 1.75rem;
+  max-width: 100%;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  background: #f5f1e8;
+  padding: .5rem;
+  box-shadow: 0 4px 12px rgba(38, 14, 3, 0.1);
+  border: 1px solid rgba(38, 14, 3, 0.1);
+  overflow: hidden;
+}
+
+.game-detail-swiper {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+}
+
+.game-detail-swiper .swiper-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
+
+.game-detail-swiper .swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.game-detail-carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: calc(var(--radius-lg) - 4px);
+}
+
+/* Swiper Navigation Buttons */
+.game-detail-swiper .swiper-button-next,
+.game-detail-swiper .swiper-button-prev {
+  color: #260e03;
+  background: rgba(245, 241, 232, 0.9);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(38, 14, 3, 0.15);
+  transition: all 0.2s ease;
+}
+
+.game-detail-swiper .swiper-button-next:hover,
+.game-detail-swiper .swiper-button-prev:hover {
+  background: rgba(245, 241, 232, 1);
+  box-shadow: 0 4px 12px rgba(38, 14, 3, 0.2);
+}
+
+.game-detail-swiper .swiper-button-next::after,
+.game-detail-swiper .swiper-button-prev::after {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Swiper Pagination */
+.game-detail-swiper .swiper-pagination {
+  bottom: 10px;
+}
+
+.game-detail-swiper .swiper-pagination-bullet {
+  background: rgba(38, 14, 3, 0.4);
+  opacity: 1;
+  width: 8px;
+  height: 8px;
+  transition: all 0.2s ease;
+}
+
+.game-detail-swiper .swiper-pagination-bullet-active {
+  background: #260e03;
+  width: 24px;
+  border-radius: 4px;
 }
 
 .game-detail-carousel-placeholder {
   width: 100%;
-  aspect-ratio: 16 / 9; /* plus large visuellement */
-  border-radius: var(--radius-lg);
+  min-height: 300px;
+  aspect-ratio: 4 / 3;
   border: 1px dashed rgba(38, 14, 3, 0.3);
   background:
     radial-gradient(circle at top, rgba(212, 167, 99, 0.1), transparent 60%),
@@ -20,6 +115,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: calc(var(--radius-lg) - 4px);
 }
 
 .game-detail-carousel-placeholder span {
@@ -27,10 +123,14 @@
   color: #260e03;
 }
 
+.game-detail-info-wrapper {
+  width: 100%;
+}
+
 .game-detail-info {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1.25rem;
 }
 
 .game-detail-header {
@@ -68,13 +168,30 @@
 .game-detail-price-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(245, 241, 232, 0.4);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(38, 14, 3, 0.1);
+}
+
+.game-detail-price-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
 }
 
 .game-detail-price {
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--color-warm-dark);
+  line-height: 1;
+}
+
+.game-detail-price-wrapper small {
+  font-size: 0.85rem;
+  color: #260e03;
+  opacity: 0.7;
 }
 
 .game-detail-meta {
@@ -111,11 +228,24 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.game-detail-actions .btn-primary {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+}
+
+.game-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .game-detail-section {
-  margin-top: 0.75rem;
+  margin-top: 0;
 }
 
 .game-detail-section h2 {
@@ -139,14 +269,120 @@
   margin-top: 0.2rem;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .game-detail-actions {
-    flex-direction: column;
-    align-items: flex-start;
+/* Responsive: Desktop side-by-side layout */
+@media (min-width: 900px) {
+  .game-detail-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .game-detail-info-wrapper {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+  }
+
+  .game-detail-carousel {
+    padding: .5rem;
+    max-width: 100%;
+  }
+
+  .game-detail-carousel-image {
+    max-height: 70vh;
+  }
+
+  .game-detail-info {
+    gap: 1.5rem;
+  }
+
+  .game-detail-actions .btn-primary {
+    width: auto;
+    min-width: 200px;
+  }
+
+  .game-detail-content {
+    margin-top: 2rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .game-detail-layout {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 4rem;
+  }
+
+  .game-detail-carousel {
+    padding: .5rem;
+  }
+
+  .game-detail-carousel-image {
+    max-height: 75vh;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 899px) {
+  .game-detail-carousel {
+    padding: .5rem;
+    min-height: auto;
+  }
+
+  .game-detail-carousel-image {
+    max-height: 400px;
+    max-width: 100%;
+  }
+
+  /* Smaller navigation buttons on mobile */
+  .game-detail-swiper .swiper-button-next,
+  .game-detail-swiper .swiper-button-prev {
+    width: 32px;
+    height: 32px;
+  }
+
+  .game-detail-swiper .swiper-button-next::after,
+  .game-detail-swiper .swiper-button-prev::after {
+    font-size: 14px;
+  }
+
+  .game-page {
+    gap: 1.5rem;
+  }
+
+  .game-detail-layout {
+    gap: 1.5rem;
+  }
+
+  .game-detail-info {
+    gap: 1rem;
   }
 
   .game-detail-price {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+  }
+
+  .game-detail-price-meta {
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .game-detail-carousel {
+    padding: .5rem;
+  }
+
+  .game-detail-carousel-image {
+    max-height: 350px;
+  }
+
+  .game-detail-price {
+    font-size: 1.35rem;
+  }
+
+  .game-detail-content {
+    gap: 1.25rem;
+    margin-top: 1rem;
   }
 }

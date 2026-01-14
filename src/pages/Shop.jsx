@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useDebounce } from 'use-debounce'
 import catalog from '../content/catalog.json'
 import GameCard from '../components/GameCard'
 import { useCart } from '../context/CartContext'
@@ -7,8 +9,20 @@ import './Shop.css'
 const games = catalog.games
 
 export default function Shop() {
-	const [searchTerm, setSearchTerm] = useState('')
-	const { totalItems, addItem } = useCart()
+	const [searchParams, setSearchParams] = useSearchParams()
+	const initialSearch = searchParams.get('q') || ''
+	const [searchTerm, setSearchTerm] = useState(initialSearch)
+	const [debouncedSearchTerm] = useDebounce(searchTerm, 300)
+	const { addItem } = useCart()
+
+	// Sync debounced search term with URL
+	useEffect(() => {
+		if (debouncedSearchTerm.trim()) {
+			setSearchParams({ q: debouncedSearchTerm.trim() }, { replace: true })
+		} else {
+			setSearchParams({}, { replace: true })
+		}
+	}, [debouncedSearchTerm, setSearchParams])
 
 	const handleSearchChange = (event) => {
 		setSearchTerm(event.target.value)
@@ -18,7 +32,7 @@ export default function Shop() {
 		addItem(gameId, 1)
 	}
 
-	const normalizedSearch = searchTerm.trim().toLowerCase()
+	const normalizedSearch = debouncedSearchTerm.trim().toLowerCase()
 
 	const filteredGames = games.filter((game) => {
 		if (!normalizedSearch) return true
@@ -45,6 +59,20 @@ export default function Shop() {
 					</p>
 				</div>
 			</header>
+
+			{/* Search temporarily disabled - only one game in catalog */}
+			{/* <div className="shop-toolbar">
+				<div className="shop-search">
+					<label htmlFor="shop-search-input">Rechercher un jeu</label>
+					<input
+						id="shop-search-input"
+						type="text"
+						value={searchTerm}
+						onChange={handleSearchChange}
+						placeholder="Rechercher par titre, description..."
+					/>
+				</div>
+			</div> */}
 
 			{filteredGames.length === 0 ? (
 				<div className="shop-empty">

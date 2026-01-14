@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import './GameCard.css'
+import { getGameImage } from '../utils/gameImages'
 
 const GameCard = ({ game, onAddToCart }) => {
 	const playersText =
@@ -19,11 +20,23 @@ const GameCard = ({ game, onAddToCart }) => {
 		onAddToCart(game.id)
 	}
 
+	const gameImage = getGameImage(game.slug)
+
 	return (
 		<article className="card game-card">
 			<Link to={`/shop/${game.slug}`} className="game-card-main">
-				<div className="game-card-image-placeholder">
-					<span>Visuel du jeu à venir</span>
+				<div className="game-card-image-container">
+					{gameImage ? (
+						<img 
+							src={gameImage} 
+							alt={game.title}
+							className="game-card-image"
+						/>
+					) : (
+						<div className="game-card-image-placeholder">
+							<span>Visuel du jeu à venir</span>
+						</div>
+					)}
 				</div>
 
                 {/* <header className="game-card-header">

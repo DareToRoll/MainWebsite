@@ -75,6 +75,28 @@
   background: rgba(255, 255, 255, 1);
 }
 
+.form-group input[aria-invalid="true"],
+.form-group select[aria-invalid="true"],
+.form-group textarea[aria-invalid="true"] {
+  border-color: rgba(249, 115, 115, 0.6);
+  background: rgba(254, 242, 242, 0.5);
+}
+
+.form-group input[aria-invalid="true"]:focus,
+.form-group select[aria-invalid="true"]:focus,
+.form-group textarea[aria-invalid="true"]:focus {
+  border-color: rgba(249, 115, 115, 0.8);
+  box-shadow: 0 0 0 1px rgba(249, 115, 115, 0.3);
+}
+
+.form-error {
+  display: block;
+  color: var(--color-danger, #dc2626);
+  font-weight: 500;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
 .form-group-checkbox {
   margin-top: 0.25rem;
 }

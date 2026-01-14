@@ -1,8 +1,16 @@
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation, Pagination } from 'swiper/modules'
 import catalog from '../content/catalog.json'
 import { useCart } from '../context/CartContext'
 import './GameDetails.css'
+import { getGameImages } from '../utils/gameImages'
+
+// Import Swiper styles
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 
 export default function GameDetails() {
 	const { slug } = useParams()
@@ -47,6 +55,8 @@ export default function GameDetails() {
 		addItem(game.id, 1)
 	}
 
+	const gameImages = getGameImages(game.slug)
+
 	return (
 		<section className="page game-page">
 			<button
@@ -57,84 +67,107 @@ export default function GameDetails() {
 				← Revenir aux jeux
 			</button>
 
-			{/* GRAND CAROUSEL PLEINE LARGEUR */}
-			<div className="game-detail-carousel">
-				<div className="game-detail-carousel-placeholder">
-					<span>Carousel d&apos;images du jeu à venir</span>
+			<div className="game-detail-layout">
+				{/* IMAGE/CAROUSEL SECTION */}
+				<div className="game-detail-image-section">
+					<div className="game-detail-carousel">
+						{gameImages.length > 0 ? (
+							<Swiper
+								modules={[Navigation, Pagination]}
+								spaceBetween={10}
+								slidesPerView={1}
+								navigation
+								pagination={{ clickable: true }}
+								className="game-detail-swiper"
+							>
+								{gameImages.map((image, index) => (
+									<SwiperSlide key={index}>
+										<img 
+											src={image} 
+											alt={`${game.title} - Image ${index + 1}`}
+											className="game-detail-carousel-image"
+										/>
+									</SwiperSlide>
+								))}
+							</Swiper>
+						) : (
+							<div className="game-detail-carousel-placeholder">
+								<span>Carousel d&apos;images du jeu à venir</span>
+							</div>
+						)}
+					</div>
 				</div>
-			</div>
 
-			{/* INFOS DÉTAILLÉES */}
-			<div className="game-detail-info">
-				<header className="game-detail-header">
-					<div className="game-detail-title-row">
-						<h1 className="page-title game-detail-title">
-							{game.title}
-						</h1>
+				{/* INFO AND CONTENT SECTION */}
+				<div className="game-detail-info-wrapper">
+					<div className="game-detail-info">
+						<header className="game-detail-header">
+							<div className="game-detail-title-row">
+								<h1 className="page-title game-detail-title">
+									{game.title}
+								</h1>
 
-						<div className="game-detail-badges">
-							{game.status === 'preorder' && (
-								<span className="badge game-detail-badge">
-									Précommande
-								</span>
-							)}
-							{game.isFeatured && (
-								<span className="badge">
-									Jeu vedette
-								</span>
-							)}
+								<div className="game-detail-badges">
+									{game.status === 'preorder' && (
+										<span className="badge game-detail-badge">
+											Précommande
+										</span>
+									)}
+									{game.isFeatured && (
+										<span className="badge">
+											Jeu vedette
+										</span>
+									)}
+								</div>
+							</div>
+
+							<p className="page-subtitle game-detail-subtitle">
+								{game.shortDescription}
+							</p>
+						</header>
+
+						<div className="game-detail-price-meta">
+							<div className="game-detail-price-wrapper">
+								<span className="game-detail-price">{game.price}</span> 
+								<small>TTC</small>
+							</div>
+							<div className="game-detail-meta">
+								<span>{playersText}</span>
+								<span>{durationText}</span>
+								<span>{ageText}</span>
+								<span>{categoryLabel}</span>
+							</div>
+						</div>
+
+						<div className="game-detail-actions">
+							<button
+								type="button"
+								className="btn btn-primary"
+								onClick={handleAddToCart}
+							>
+								Ajouter au panier
+							</button>
+						</div>
+
+						{/* CONTENT SECTIONS */}
+						<div className="game-detail-content">
+							<section className="game-detail-section">
+								<h2>Plongez dans l&apos;aventure</h2>
+								<p>{game.longDescription}</p>
+							</section>
+
+							<section className="game-detail-section game-detail-facts">
+								<h2>En résumé</h2>
+								<ul>
+									<li>Nombre de joueurs : {playersText}</li>
+									<li>Durée d&apos;une partie : {durationText}</li>
+									<li>Âge recommandé : {ageText}</li>
+									<li>Type de jeu : {categoryLabel}</li>
+								</ul>
+							</section>
 						</div>
 					</div>
-
-					<p className="page-subtitle game-detail-subtitle">
-						{game.shortDescription}
-					</p>
-				</header>
-
-				<div className="game-detail-price-meta">
-					<div><span className="game-detail-price">{game.price}</span> <small>TTC</small></div>
-					<div className="game-detail-meta">
-						<span>{playersText}</span>
-						<span>{durationText}</span>
-						<span>{ageText}</span>
-						<span>{categoryLabel}</span>
-					</div>
 				</div>
-
-				{/* {game.tags && game.tags.length > 0 && (
-					<div className="game-detail-tags">
-						{game.tags.map((tag) => (
-							<span key={tag} className="game-detail-tag">
-								{tag}
-							</span>
-						))}
-					</div>
-				)} */}
-
-				<div className="game-detail-actions">
-					<button
-						type="button"
-						className="btn btn-primary"
-						onClick={handleAddToCart}
-					>
-						Ajouter au panier
-					</button>
-				</div>
-
-				<section className="game-detail-section">
-					<h2>Plongez dans l&apos;aventure</h2>
-					<p>{game.longDescription}</p>
-				</section>
-
-				<section className="game-detail-section game-detail-facts">
-					<h2>En résumé</h2>
-					<ul>
-						<li>Nombre de joueurs : {playersText}</li>
-						<li>Durée d&apos;une partie : {durationText}</li>
-						<li>Âge recommandé : {ageText}</li>
-						<li>Type de jeu : {categoryLabel}</li>
-					</ul>
-				</section>
 			</div>
 		</section>
 	)

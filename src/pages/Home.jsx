@@ -1,10 +1,11 @@
 import homeContent from '../content/home.json';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import { getGameImage } from '../utils/gameImages';
 
 export default function Home() {
 	const navigate = useNavigate();
-	const { hero, featuredGame, games, events, articles } = homeContent;
+	const { hero, featuredGame } = homeContent;
 
 	const handleGoToShop = () => {
 		navigate('/shop')
@@ -15,6 +16,8 @@ export default function Home() {
 			navigate(`/shop/${featuredGame.slug}`)
 		}
 	}
+
+	const featuredGameImage = getGameImage(featuredGame.slug)
 	
 	return (
 		<section className="page home-page">
@@ -81,9 +84,17 @@ export default function Home() {
 					<p className="home-featured-tagline">{featuredGame.tagline}</p>
 
 					<div className="home-featured-carousel">
-						<div className="home-featured-carousel-placeholder">
-							Aperçu visuel du jeu
-						</div>
+						{featuredGameImage ? (
+							<img 
+								src={featuredGameImage} 
+								alt={featuredGame.title}
+								className="home-featured-carousel-image"
+							/>
+						) : (
+							<div className="home-featured-carousel-placeholder">
+								Aperçu visuel du jeu
+							</div>
+						)}
 					</div>
 
 					<div className="home-featured-meta">
