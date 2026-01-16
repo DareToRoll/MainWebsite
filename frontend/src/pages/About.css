@@ -7,12 +7,21 @@
 .about-layout {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 2rem;
+  gap: 2.5rem;
   align-items: flex-start;
 }
 
-.about-text p + p {
-  margin-top: 0.75rem;
+.about-text {
+  max-width: 65ch;
+  line-height: 1.7;
+}
+
+.about-text p {
+  margin: 0 0 1.25rem;
+}
+
+.about-text p:last-child {
+  margin-bottom: 0;
 }
 
 .about-team {
@@ -21,13 +30,16 @@
 
 .about-team-title {
   font-weight: 600;
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
+  color: var(--color-warm-dark);
 }
 
 .about-team-text {
   font-size: 0.9rem;
   color: #260e03;
-  margin: 0 0 0.8rem;
+  line-height: 1.6;
+  margin: 0 0 1rem;
 }
 
 .about-team-photo-placeholder {

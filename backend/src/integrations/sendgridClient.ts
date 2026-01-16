@@ -22,6 +22,6 @@ export async function sendContactMail(data: ContactPayload): Promise<void> {
             message: data.message,
         },
     }
-
+    
     await sgMail.send(msg)
 }

@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import contactRoutes from './routes/contactRoutes'
+import paymentRoutes from './routes/paymentRoutes'
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.get('/api/health', (_req, res) => {
 
 // Routes API
 app.use('/api', contactRoutes)
+app.use('/api', paymentRoutes)
 
 // 404 API
 app.use('/api', (_req, res) => {

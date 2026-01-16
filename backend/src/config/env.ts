@@ -18,4 +18,28 @@ export const env = {
         process.env.CONTACT_TEMPLATE_ID,
         'CONTACT_TEMPLATE_ID',
     ),
+    // Sherlock's Sips Paypage configuration
+    SHERLOCK_MERCHANT_ID: required(
+        process.env.SHERLOCK_MERCHANT_ID,
+        'SHERLOCK_MERCHANT_ID',
+    ),
+    SHERLOCK_SECRET_KEY: required(
+        process.env.SHERLOCK_SECRET_KEY,
+        'SHERLOCK_SECRET_KEY',
+    ),
+    SHERLOCK_KEY_VERSION: required(
+        process.env.SHERLOCK_KEY_VERSION,
+        'SHERLOCK_KEY_VERSION',
+    ),
+    SHERLOCK_PAYMENT_URL:
+        process.env.SHERLOCK_PAYMENT_URL ||
+        'https://sherlocks-paiement.secure.lcl.fr/payment',
+    SHERLOCK_RETURN_URL: required(
+        process.env.SHERLOCK_RETURN_URL,
+        'SHERLOCK_RETURN_URL',
+    ),
+    SHERLOCK_CALLBACK_URL: required(
+        process.env.SHERLOCK_CALLBACK_URL,
+        'SHERLOCK_CALLBACK_URL',
+    ),
 }

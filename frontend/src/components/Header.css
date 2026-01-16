@@ -65,7 +65,6 @@
 
 .header-icon-button {
   border-radius: 999px;
-  border: 1px solid rgba(212, 167, 99, 0.35);
   background: rgba(85, 74, 63, 0.7);
   width: 34px;
   height: 34px;
@@ -93,10 +92,11 @@
   outline-offset: 2px;
 }
 
-.account-button .account-initial {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text);
+.account-button svg {
+  width: 15px;
+  height: 15px;
+  color: white;
+  display: block;
 }
 
 .cart-button {

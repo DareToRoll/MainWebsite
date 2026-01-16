@@ -26,12 +26,7 @@ const contactSchema = z.object({
 
 export default function Contact() {
 	const [status, setStatus] = useState(null)
-	const {
-		register,
-		handleSubmit,
-		formState: { errors, isSubmitting },
-		reset,
-	} = useForm({
+	const { register, handleSubmit, formState: { errors, isSubmitting }, reset, } = useForm({
 		resolver: zodResolver(contactSchema),
 		defaultValues: {
 			topic: 'general',
@@ -40,12 +35,12 @@ export default function Contact() {
 	})
 
 	const onSubmit = async (data) => {
-		setStatus(null)
+		setStatus(null);
 
 		// Check honeypot field (should be empty)
 		if (data.website) {
 			// Bot detected, silently fail
-			return
+			return;
 		}
 
 		const payload = {
@@ -93,7 +88,7 @@ export default function Contact() {
 					envie de papoter&nbsp;? On adore recevoir vos messages et on lit chacun d&apos;eux avec attention.
 				</p>
 			</header>
-
+			
 			<div className="contact-layout">
 				<div className="contact-intro">
 					<p>

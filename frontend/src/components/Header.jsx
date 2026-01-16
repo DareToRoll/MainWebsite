@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import './Header.css'
 import cartIcon from '../assets/image/shoppingcart.png'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRightToBracket } from '@fortawesome/free-solid-svg-icons'
 import { useCart } from '../context/CartContext'
 import DtrLogo from '../assets/image/LogoDtrWhite.png';
 
@@ -32,13 +34,13 @@ const Header = () => {
 				</nav>
 
 				<div className="header-right">
-					{/* <button
-						type="button"
+					{/* <NavLink
+						to="/login"
 						className="header-icon-button account-button"
-						aria-label="Compte / connexion"
+						aria-label="Connexion"
 					>
-						<span className="account-initial">A</span>
-					</button> */}
+						<FontAwesomeIcon icon={faRightToBracket} />
+					</NavLink> */}
 
 					<div className="cart-wrapper">
 						<button

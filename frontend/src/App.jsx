@@ -5,6 +5,7 @@ import Shop from './pages/Shop'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import GameDetails from './pages/GameDetails'
+import Auth from './pages/Auth'
 
 function App() {
 	return (
@@ -15,6 +16,8 @@ function App() {
 				<Route path="/shop/:slug" element={<GameDetails />} />
 				<Route path="/about" element={<About />} />
 				<Route path="/contact" element={<Contact />} />
+				<Route path="/login" element={<Auth />} />
+				<Route path="/auth" element={<Auth />} />
 			</Routes>
 		</Layout>
 	)
