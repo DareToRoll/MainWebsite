@@ -23,17 +23,17 @@ interface VerificationResult {
 /**
  * Generate HMAC-SHA256 signature for Sherlock's Sips
  */
-function generateSeal(data: string): string {
+/* function generateSeal(data: string): string {
     return crypto
         .createHmac('sha256', env.SHERLOCK_SECRET_KEY)
         .update(data)
         .digest('hex')
-}
+} */
 
 /**
  * Create payment request data with proper signature
  */
-export async function createPaymentRequest(
+/* export async function createPaymentRequest(
     params: PaymentRequestParams,
 ): Promise<PaymentData> {
     const { amount, orderId, customerEmail } = params
@@ -72,11 +72,11 @@ export async function createPaymentRequest(
         formData,
     }
 }
-
+ */
 /**
  * Verify payment response signature from Sherlock's
  */
-export async function verifyPaymentResponse(
+/* export async function verifyPaymentResponse(
     responseData: Record<string, any>,
 ): Promise<VerificationResult> {
     try {
@@ -132,4 +132,4 @@ export async function verifyPaymentResponse(
             error: 'Erreur lors de la vérification de la signature.',
         }
     }
-}
+} */

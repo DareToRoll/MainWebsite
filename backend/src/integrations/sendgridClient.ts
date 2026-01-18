@@ -1,7 +1,7 @@
 import sgMail from '@sendgrid/mail'
 import { env } from '../config/env'
 
-sgMail.setApiKey(env.SENDGRID_API_KEY)
+/* sgMail.setApiKey(env.SENDGRID_API_KEY) */
 
 export interface ContactPayload {
     name: string
@@ -10,7 +10,7 @@ export interface ContactPayload {
     message: string
 }
 
-export async function sendContactMail(data: ContactPayload): Promise<void> {
+/* export async function sendContactMail(data: ContactPayload): Promise<void> {
     const msg = {
         to: env.CONTACT_TO,
         from: env.CONTACT_FROM,
@@ -24,4 +24,4 @@ export async function sendContactMail(data: ContactPayload): Promise<void> {
     }
     
     await sgMail.send(msg)
-}
+} */
