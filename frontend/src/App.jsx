@@ -6,6 +6,7 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import GameDetails from './pages/GameDetails'
 import Auth from './pages/Auth'
+import ConfirmPurchase from './pages/ConfirmPurchase'
 
 function App() {
 	return (
@@ -18,6 +19,7 @@ function App() {
 				<Route path="/contact" element={<Contact />} />
 				<Route path="/login" element={<Auth />} />
 				<Route path="/auth" element={<Auth />} />
+				<Route path="/confirm-purchase" element={<ConfirmPurchase />} />
 			</Routes>
 		</Layout>
 	)

@@ -46,11 +46,8 @@ export const CartProvider = ({ children }) => {
 
 	const setItemQuantity = (gameId, quantity) => {
 		setItems((prev) => {
-			if (!quantity || quantity <= 0) {
-				const { [gameId]: _, ...rest } = prev
-				return rest
-			}
-			return { ...prev, [gameId]: quantity }
+			const clampedQuantity = Math.max(1, quantity || 1)
+			return { ...prev, [gameId]: clampedQuantity }
 		})
 	}
 

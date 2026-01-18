@@ -1,0 +1,133 @@
+/* Confirm Purchase page styles */
+
+.confirm-purchase-page {
+	gap: 2.5rem;
+}
+
+.confirm-purchase-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+	gap: 2.5rem;
+	align-items: flex-start;
+}
+
+.confirm-purchase-recap {
+	gap: 1.25rem;
+}
+
+.confirm-purchase-section-title {
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: var(--color-warm-dark);
+	margin: 0;
+}
+
+.confirm-purchase-items {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.confirm-purchase-item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid rgba(38, 14, 3, 0.1);
+}
+
+.confirm-purchase-item:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.confirm-purchase-item-main {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.confirm-purchase-item-title {
+	font-weight: 500;
+	color: var(--color-warm-dark);
+	margin: 0;
+	font-size: 0.95rem;
+}
+
+.confirm-purchase-item-price {
+	font-size: 0.85rem;
+	color: var(--color-text-muted);
+	margin: 0;
+	white-space: nowrap;
+}
+
+.confirm-purchase-item-quantity {
+	font-size: 0.85rem;
+	color: var(--color-text-muted);
+}
+
+.confirm-purchase-item-total {
+	font-weight: 600;
+	color: var(--color-warm-dark);
+	font-size: 0.95rem;
+	text-align: right;
+}
+
+.confirm-purchase-total {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: 1rem;
+	border-top: 2px solid rgba(38, 14, 3, 0.15);
+	margin-top: 0.5rem;
+}
+
+.confirm-purchase-total-label {
+	font-weight: 600;
+	color: var(--color-warm-dark);
+	margin: 0;
+	font-size: 1rem;
+}
+
+.confirm-purchase-total-amount {
+	font-weight: 600;
+	color: var(--color-warm-dark);
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.confirm-purchase-form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+	.confirm-purchase-layout {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 2rem;
+	}
+}
+
+@media (max-width: 700px) {
+	.form-row {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.85rem;
+	}
+
+	.confirm-purchase-form {
+		gap: .75rem;
+	}
+
+	.form-group input,
+	.form-group select,
+	.form-group textarea {
+		padding: 0.6rem 0.75rem;
+	}
+}

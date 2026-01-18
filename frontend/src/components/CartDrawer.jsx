@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import catalog from '../content/catalog.json'
 import { useCart } from '../context/CartContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -12,6 +13,7 @@ const MAX_QUANTITY = 99
 const MIN_QUANTITY = 1
 
 const CartDrawer = () => {
+	const navigate = useNavigate()
 	const {
 		items,
 		isCartOpen,
@@ -44,8 +46,8 @@ const CartDrawer = () => {
 		const quantity = Number.parseInt(value, 10)
 		
 		if (Number.isNaN(quantity) || quantity < MIN_QUANTITY) {
-			// If invalid or less than min, remove item
-			removeItem(gameId)
+			// Clamp to minimum 1
+			setItemQuantity(gameId, MIN_QUANTITY)
 			return
 		}
 
@@ -61,10 +63,8 @@ const CartDrawer = () => {
 	const handleDecrement = (gameId, currentQuantity) => {
 		if (currentQuantity > MIN_QUANTITY) {
 			setItemQuantity(gameId, currentQuantity - 1)
-		} else {
-			// Remove if quantity would be 0
-			removeItem(gameId)
 		}
+		// If already at min, do nothing (keep at 1)
 	}
 
 	const handleIncrement = (gameId, currentQuantity) => {
@@ -79,8 +79,8 @@ const CartDrawer = () => {
 	}
 
 	const handleCheckout = () => {
-		// TODO: intégrer un vrai flux de paiement plus tard
-		console.log('Confirmer l’achat avec', totalItems, 'article(s)')
+		closeCart()
+		navigate('/confirm-purchase')
 	}
 
 	return (
