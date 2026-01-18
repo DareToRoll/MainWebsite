@@ -1,5 +1,5 @@
-import { ContactPayload, sendContactMail } from '../integrations/sendgridClient'
+/* import { ContactPayload, sendContactMail } from '../integrations/sendgridClient' */
 
-export async function handleContactMessage(payload: ContactPayload): Promise<void> {
+/* export async function handleContactMessage(payload: ContactPayload): Promise<void> {
     await sendContactMail(payload)
-}
+} */

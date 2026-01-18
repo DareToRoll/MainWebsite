@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
-import { createPaymentRequest, verifyPaymentResponse } from '../services/paymentService'
+//import { createPaymentRequest, verifyPaymentResponse } from '../services/paymentService'
 
 /**
  * Initiate a payment - generates payment form data
  */
-export async function initiatePayment(req: Request, res: Response) {
+/* export async function initiatePayment(req: Request, res: Response) {
     try {
         const { amount, orderId, customerEmail } = req.body || {}
 
@@ -34,12 +34,12 @@ export async function initiatePayment(req: Request, res: Response) {
             error: "Une erreur s'est produite lors de l'initialisation du paiement.",
         })
     }
-}
+} */
 
 /**
  * Handle payment response/callback from Sherlock's
  */
-export async function handlePaymentResponse(req: Request, res: Response) {
+/* export async function handlePaymentResponse(req: Request, res: Response) {
     try {
         // Sherlock's can send data via POST body or query params
         const responseData = { ...req.query, ...req.body }
@@ -70,4 +70,4 @@ export async function handlePaymentResponse(req: Request, res: Response) {
             error: "Une erreur s'est produite lors du traitement de la réponse de paiement.",
         })
     }
-}
+} */
