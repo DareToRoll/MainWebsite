@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
-import { handleContactMessage } from '../services/mailService'
+//import { handleContactMessage } from '../services/mailService'
 
-export async function postContact(req: Request, res: Response) {
+/* export async function postContact(req: Request, res: Response) {
     try {
         const { name, email, topic, message } = req.body || {}
 
@@ -31,4 +31,4 @@ export async function postContact(req: Request, res: Response) {
             error: "Une erreur s'est produite lors de l'envoi du message.",
         })
     }
-}
+} */
