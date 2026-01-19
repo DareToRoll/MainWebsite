@@ -1,17 +1,25 @@
 import express from 'express'
 import cors from 'cors'
+import { env } from "./config/env";
+
 import contactRoutes from './routes/contactRoutes'
 import paymentRoutes from './routes/paymentRoutes'
 
-const app = express()
+const app = express();
+
+const allowed = env.FRONTEND_ORIGINS.split(",").map(s => s.trim());
 
 // Middlewares globaux
-app.use(
-    cors({
-        origin: true, // en prod, mettre le domaine précis du front
-        credentials: false,
-    }),
-)
+app.use(cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // non-browser calls (some webhooks) may not send Origin
+      return allowed.includes(origin)
+        ? cb(null, true)
+        : cb(new Error(`CORS blocked: ${origin}`));
+    },
+    credentials: false,
+}));
+
 app.use(express.json())
 
 // Health check
