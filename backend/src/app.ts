@@ -12,7 +12,23 @@ const allowed = env.FRONTEND_ORIGINS.split(",").map(s => s.trim());
 // Middlewares globaux
 app.use(cors({
     origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // non-browser calls (some webhooks) may not send Origin
+      // Allow requests without origin (webhooks, server-to-server calls)
+      if (!origin) return cb(null, true);
+      
+      // Allow Sherlock's/SIPS payment callbacks
+      // These are server-to-server webhooks, not browser requests
+      const sherlockDomains = [
+        'https://sherlocks-payment-web-simu.secure.lcl.fr',
+        'https://payment-webinit.sips-services.com',
+        'https://payment-webinit.test.sips-services.com',
+        'https://sherlocks-payment-web.secure.lcl.fr',
+      ];
+      
+      if (sherlockDomains.some(domain => origin.startsWith(domain))) {
+        return cb(null, true);
+      }
+      
+      // Allow frontend origins
       return allowed.includes(origin)
         ? cb(null, true)
         : cb(new Error(`CORS blocked: ${origin}`));
@@ -22,6 +38,16 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Logging middleware for debugging
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/payment/return') || req.path.startsWith('/api/payment/auto')) {
+        console.log('[Middleware] Incoming request:', req.method, req.path);
+        console.log('[Middleware] Content-Type:', req.get('Content-Type'));
+        console.log('[Middleware] Body keys:', Object.keys(req.body || {}));
+    }
+    next();
+});
 
 // Health check
 app.get('/api/health', (_req, res) => {

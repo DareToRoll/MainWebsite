@@ -7,7 +7,13 @@ const router = Router();
 router.post('/payment/init', initiatePayment);
 
 // POST /api/payment/return - Handle normalReturnUrl callback (user-facing redirect)
-router.post('/payment/return', handleNormalReturn);
+router.post('/payment/return', (req, res, next) => {
+    console.log('[Route] /payment/return - Route matched');
+    console.log('[Route] Method:', req.method);
+    console.log('[Route] Path:', req.path);
+    console.log('[Route] Original URL:', req.originalUrl);
+    next();
+}, handleNormalReturn);
 
 // POST /api/payment/auto - Handle automaticResponseUrl callback (server-to-server)
 router.post('/payment/auto', handleAutomaticResponse);

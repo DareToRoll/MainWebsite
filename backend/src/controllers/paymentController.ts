@@ -92,6 +92,10 @@ export async function initiatePayment(req: Request, res: Response) {
  * Handle normalReturnUrl callback from Sherlock's (user-facing redirect)
  */
 export async function handleNormalReturn(req: Request, res: Response) {
+    console.log('[Payment Return] Handler called');
+    console.log('[Payment Return] Request method:', req.method);
+    console.log('[Payment Return] Request path:', req.path);
+    
     try {
         // Log raw body for debugging
         console.log('[Payment Return] Raw body keys:', Object.keys(req.body || {}));
