@@ -34,7 +34,7 @@ app.use(cors({
         ? cb(null, true)
         : cb(new Error(`CORS blocked: ${origin}`));
     },
-    credentials: false,
+    credentials: true, // Allow credentials (cookies) for frontend requests
 }));
 
 app.use(cookieParser());
