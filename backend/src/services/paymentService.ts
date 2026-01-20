@@ -13,6 +13,7 @@ export interface SherlockConfig {
     interfaceVersion: string;
     sealAlgorithm?: SealAlgorithm;
     timeoutMs?: number;
+    transactionKeyMode?: "auto" | "merchant";
 }
 
 export interface PaypageInitResponse {
@@ -76,6 +77,7 @@ export interface OneShotInitInput {
 export function createSherlockPaypage(cfg: SherlockConfig) {
     const algorithm: SealAlgorithm = cfg.sealAlgorithm ?? "HMAC-SHA-256";
     const timeoutMs = cfg.timeoutMs ?? 15000;
+    const transactionKeyMode = cfg.transactionKeyMode ?? "auto";
 
     function buildOneShotInitPayload(input: OneShotInitInput): JsonObject {
         const amountStr = normalizeAmountToCentsString(input.amount);
@@ -90,9 +92,13 @@ export function createSherlockPaypage(cfg: SherlockConfig) {
             keyVersion: cfg.keyVersion,
             interfaceVersion: cfg.interfaceVersion,
             normalReturnUrl: input.normalReturnUrl,
-            transactionReference: input.transactionReference ?? makeTransactionReference(),
             transactionOrigin: input.transactionOrigin ?? "SO_WEBAPPLI",
         };
+
+        // Only include transactionReference if mode is "merchant"
+        if (transactionKeyMode === "merchant") {
+            base.transactionReference = input.transactionReference ?? makeTransactionReference();
+        }
 
         if (input.automaticResponseUrl) base.automaticResponseUrl = input.automaticResponseUrl;
         if (input.orderId) base.orderId = input.orderId;
@@ -123,8 +129,21 @@ export function createSherlockPaypage(cfg: SherlockConfig) {
             ? (payloadOrInput as JsonObject)
             : buildOneShotInitPayload(payloadOrInput as OneShotInitInput);
 
+        // Log payload keys in non-production
+        if (process.env.NODE_ENV !== "production") {
+            console.log("[PaymentService] Outgoing payload keys:", Object.keys(payload).sort());
+            console.log("[PaymentService] Transaction key mode:", transactionKeyMode);
+        }
+
         const text = await postJson(cfg.paymentInitUrl, payload, timeoutMs);
-        return JSON.parse(text) as PaypageInitResponse;
+        const response = JSON.parse(text) as PaypageInitResponse;
+
+        // Log any transaction identifier returned by SIPS
+        if (process.env.NODE_ENV !== "production" && response.redirectionStatusCode === "00") {
+            console.log("[PaymentService] SIPS response fields:", Object.keys(response).sort());
+        }
+
+        return response;
     }
 
     function requireInitSuccess(resp: PaypageInitResponse) {
@@ -307,8 +326,20 @@ async function postJson(url: string, payload: JsonObject, timeoutMs: number): Pr
         });
 
         const text = await res.text();
-        if (!res.ok) throw new Error(`Sherlock init HTTP ${res.status}: ${text}`);
+        
+        // Always log non-2xx responses (truncate to 2KB)
+        if (!res.ok) {
+            const truncated = text.substring(0, 2048);
+            console.error(`[PaymentService] Sherlock init HTTP ${res.status}:`, truncated);
+            throw new Error(`Sherlock init HTTP ${res.status}: ${truncated}`);
+        }
+        
         return text;
+    } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error(`Sherlock init timeout after ${timeoutMs}ms`);
+        }
+        throw error;
     } finally {
         clearTimeout(t);
     }

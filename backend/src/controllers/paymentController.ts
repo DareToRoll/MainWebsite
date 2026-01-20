@@ -9,6 +9,7 @@ const sherlockPaypage = createSherlockPaypage({
     keyVersion: env.SHERLOCK_KEY_VERSION,
     interfaceVersion: env.SHERLOCK_INTERFACE_VERSION,
     sealAlgorithm: env.SHERLOCK_SEAL_ALGORITHM,
+    transactionKeyMode: env.SIPS_TRANSACTION_KEY_MODE,
     timeoutMs: 15000,
 });
 
