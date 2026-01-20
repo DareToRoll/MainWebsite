@@ -17,18 +17,25 @@ export default function PaymentResult() {
 	const [error, setError] = useState(null)
 	const timerRef = useRef(null)
 	const hasNavigatedRef = useRef(false)
+	const hasFetchedRef = useRef(false)
 
 	useEffect(() => {
+		// Prevent double fetch
+		if (hasFetchedRef.current) return
+		
+		const token = searchParams.get('token')
+		
+		if (!token) {
+			setError('Résultat de paiement introuvable.')
+			setLoading(false)
+			return
+		}
+
+		// Mark as fetched immediately to prevent duplicate calls
+		hasFetchedRef.current = true
+
 		// Fetch payment result from API
 		const fetchResult = async () => {
-			const token = searchParams.get('token')
-			
-			if (!token) {
-				setError('Résultat de paiement introuvable.')
-				setLoading(false)
-				return
-			}
-
 			try {
 				const apiBaseUrl = getApiBaseUrl()
 				const response = await fetch(`${apiBaseUrl}/api/payment/result?token=${encodeURIComponent(token)}`)
@@ -67,7 +74,8 @@ export default function PaymentResult() {
 		}
 
 		fetchResult()
-	}, [clearCart, searchParams])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []) // Only run once on mount
 
 	// Countdown timer
 	useEffect(() => {
