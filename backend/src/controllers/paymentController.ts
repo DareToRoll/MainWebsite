@@ -21,7 +21,7 @@ const sherlockPaypage = createSherlockPaypage({
  */
 export async function initiatePayment(req: Request, res: Response) {
     try {
-        const { amount, orderId, customerEmail, returnContext } = req.body || {};
+        const { amount, orderId, customerEmail } = req.body || {};
 
         if (!amount) {
             return res.status(400).json({
@@ -51,7 +51,6 @@ export async function initiatePayment(req: Request, res: Response) {
         const response = await sherlockPaypage.initPayment({
             amount: numericAmount,
             orderId: orderId ? String(orderId).trim() : undefined,
-            returnContext: returnContext ? String(returnContext) : undefined,
             customerEmail: customerEmail ? String(customerEmail).trim() : undefined,
             customerContactEmail: customerEmail ? String(customerEmail).trim() : undefined,
             normalReturnUrl,

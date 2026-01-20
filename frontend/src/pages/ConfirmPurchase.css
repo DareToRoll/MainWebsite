@@ -56,7 +56,7 @@
 }
 
 .phone-input .PhoneInputCountry {
-	margin: 0 0.5rem 0 0.85rem;
+	margin: 0 0.5rem 0 0.2rem;
 	display: flex;
 	align-items: center;
 }

@@ -64,7 +64,6 @@ export interface OneShotInitInput {
     normalReturnUrl: string;
     automaticResponseUrl?: string;
     orderId?: string;
-    returnContext?: string;
     transactionOrigin?: string;
     transactionReference?: string;
     customerEmail?: string;
@@ -102,7 +101,6 @@ export function createSherlockPaypage(cfg: SherlockConfig) {
 
         if (input.automaticResponseUrl) base.automaticResponseUrl = input.automaticResponseUrl;
         if (input.orderId) base.orderId = input.orderId;
-        if (input.returnContext) base.returnContext = input.returnContext;
         if (input.customerId) base.customerId = input.customerId;
         if (input.customerEmail) base.customerEmail = input.customerEmail;
 

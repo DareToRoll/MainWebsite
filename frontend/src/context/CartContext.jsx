@@ -36,6 +36,13 @@ export const CartProvider = ({ children }) => {
 		saveCartToStorage(items)
 	}, [items])
 
+	// Hide hint when cart opens
+	useEffect(() => {
+		if (isCartOpen) {
+			setHintVisible(false)
+		}
+	}, [isCartOpen])
+
 	const addItem = (gameId, quantity = 1) => {
 		setItems((prev) => {
 			// Idempotent: if item already exists, leave quantity unchanged

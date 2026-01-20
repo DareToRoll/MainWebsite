@@ -16,7 +16,6 @@ function getApiBaseUrl() {
  * @param {number} paymentData.amount - Amount in euros (will be converted to cents)
  * @param {string} paymentData.orderId - Unique order identifier
  * @param {string} paymentData.customerEmail - Customer email
- * @param {string} [paymentData.returnContext] - Optional context to pass through the payment flow
  * @returns {Promise<{redirectionUrl: string, redirectionData: string, redirectionVersion: string}>}
  */
 export async function initializePayment(paymentData) {

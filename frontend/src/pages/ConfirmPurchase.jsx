@@ -150,16 +150,6 @@ export default function ConfirmPurchase() {
 						country: data.billingCountry,
 					}
 
-			// Prepare return context with minimal payment data (max 255 chars)
-			// Only include billing address and essential payment fields
-			const returnContext = JSON.stringify({
-				orderId,
-				customerEmail: data.email,
-				phoneE164: data.phone,
-				billingAddress,
-				items: entries.map(([gameId, quantity]) => ({ gameId, quantity })),
-			})
-
 			// Convert total price from euros to cents for Sherlock's
 			const amountInCents = Math.round(totalPrice * 100)
 
@@ -168,7 +158,6 @@ export default function ConfirmPurchase() {
 				amount: amountInCents,
 				orderId,
 				customerEmail: data.email,
-				returnContext,
 			})
 
 			// Note: User will be redirected to Sherlock's Paypage
@@ -405,16 +394,7 @@ export default function ConfirmPurchase() {
 							</span>
 						)}
 					</div>
-
-					<div className="form-group">
-						<label htmlFor="deliveryInstructions">Instructions de livraison (optionnel)</label>
-						<textarea
-							id="deliveryInstructions"
-							placeholder="Informations utiles pour la livraison..."
-							rows={3}
-							{...register('deliveryInstructions')}
-						/>
-					</div>
+					
 
 					<div className="form-group-checkbox">
 						<label htmlFor="billingSameAsShipping">
