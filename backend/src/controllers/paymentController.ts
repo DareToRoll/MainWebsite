@@ -276,6 +276,9 @@ export async function handleAutomaticResponse(req: Request, res: Response) {
  * Retrieve payment result from token (one-time read)
  */
 export async function getPaymentResult(req: Request, res: Response) {
+    console.log('[Payment Result] GET /api/payment/result called');
+    console.log('[Payment Result] Cookies:', req.cookies);
+    
     try {
         const token = req.cookies?.payment_result_token;
 

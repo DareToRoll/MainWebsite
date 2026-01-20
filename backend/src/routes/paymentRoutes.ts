@@ -19,6 +19,9 @@ router.post('/payment/return', (req, res, next) => {
 router.post('/payment/auto', handleAutomaticResponse);
 
 // GET /api/payment/result - Get payment result from token (one-time read)
-router.get('/payment/result', getPaymentResult);
+router.get('/payment/result', (req, res, next) => {
+    console.log('[Route] GET /payment/result - Route matched');
+    next();
+}, getPaymentResult);
 
 export default router;
