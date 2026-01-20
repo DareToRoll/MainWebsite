@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { initiatePayment, handleNormalReturn, handleAutomaticResponse } from '../controllers/paymentController';
+import { initiatePayment, handleNormalReturn, handleAutomaticResponse, getPaymentResult } from '../controllers/paymentController';
 
 const router = Router();
 
@@ -17,5 +17,8 @@ router.post('/payment/return', (req, res, next) => {
 
 // POST /api/payment/auto - Handle automaticResponseUrl callback (server-to-server)
 router.post('/payment/auto', handleAutomaticResponse);
+
+// GET /api/payment/result - Get payment result from token (one-time read)
+router.get('/payment/result', getPaymentResult);
 
 export default router;

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { createSherlockPaypage, PaymentOutcome } from '../services/paymentService';
 import { env } from '../config/env';
+import { storePaymentResult, getPaymentResult as getStoredResult, deletePaymentResult } from '../services/paymentResultStore';
+import crypto from 'crypto';
 
 const sherlockPaypage = createSherlockPaypage({
     paymentInitUrl: env.SHERLOCK_PAYMENT_INIT_URL,
@@ -114,7 +116,21 @@ export async function handleNormalReturn(req: Request, res: Response) {
             console.error('[Payment Return] Missing Data or Seal');
             console.error('[Payment Return] Data:', Data ? 'present' : 'missing');
             console.error('[Payment Return] Seal:', Seal ? 'present' : 'missing');
-            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=missing_fields`);
+            
+            const errorToken = crypto.randomBytes(16).toString('hex');
+            storePaymentResult(errorToken, {
+                status: 'error',
+            });
+
+            const isProduction = env.NODE_ENV === 'production';
+            res.cookie('payment_result_token', errorToken, {
+                httpOnly: true,
+                secure: isProduction,
+                sameSite: 'lax',
+                maxAge: 300000,
+            });
+
+            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result`);
         }
 
         // Verify callback seal
@@ -127,7 +143,21 @@ export async function handleNormalReturn(req: Request, res: Response) {
             console.error('[Payment Return] Expected:', verification.expectedSeal);
             console.error('[Payment Return] Provided:', verification.providedSeal);
             console.error('[Payment Return] Data raw:', verification.dataRaw.substring(0, 100));
-            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=invalid_seal`);
+            
+            const errorToken = crypto.randomBytes(16).toString('hex');
+            storePaymentResult(errorToken, {
+                status: 'error',
+            });
+
+            const isProduction = env.NODE_ENV === 'production';
+            res.cookie('payment_result_token', errorToken, {
+                httpOnly: true,
+                secure: isProduction,
+                sameSite: 'lax',
+                maxAge: 300000,
+            });
+
+            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result`);
         }
 
         // Determine outcome
@@ -136,17 +166,28 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         console.log('[Payment Return] Outcome:', outcome.status, 'ResponseCode:', outcome.responseCode);
 
-        // Redirect to frontend with outcome
-        const queryParams = new URLSearchParams({
+        // Generate secure token for result storage
+        const token = crypto.randomBytes(16).toString('hex');
+        
+        // Store result in memory (TTL handled by store)
+        storePaymentResult(token, {
             status: outcome.status,
-            responseCode: outcome.responseCode ?? '',
-            transactionReference: outcome.transactionReference ?? '',
-            customerId: outcome.customerId ?? '',
+            responseCode: outcome.responseCode,
+            transactionReference: outcome.transactionReference,
+            customerId: outcome.customerId,
         });
 
-        const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result?${queryParams.toString()}`;
+        // Set httpOnly cookie and redirect without query params
+        const isProduction = env.NODE_ENV === 'production';
+        res.cookie('payment_result_token', token, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'lax',
+            maxAge: 300000, // 5 minutes
+        });
+
+        const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result`;
         console.log('[Payment Return] Redirecting to:', redirectUrl);
-        console.log('[Payment Return] FRONTEND_BASE_URL:', env.FRONTEND_BASE_URL);
 
         return res.redirect(redirectUrl);
     } catch (error) {
@@ -155,10 +196,23 @@ export async function handleNormalReturn(req: Request, res: Response) {
         console.error('[Payment Return] Error message:', error instanceof Error ? error.message : String(error));
         console.error('[Payment Return] Error stack:', error instanceof Error ? error.stack : 'no stack');
         
-        // Ensure we have FRONTEND_BASE_URL even in error case
+        // Generate token for error case too
+        const errorToken = crypto.randomBytes(16).toString('hex');
+        storePaymentResult(errorToken, {
+            status: 'error',
+        });
+
+        const isProduction = env.NODE_ENV === 'production';
+        res.cookie('payment_result_token', errorToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'lax',
+            maxAge: 300000,
+        });
+
         const errorRedirect = env.FRONTEND_BASE_URL 
-            ? `${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=server_error`
-            : '/payment-result?status=error&reason=server_error';
+            ? `${env.FRONTEND_BASE_URL}/payment-result`
+            : '/payment-result';
         
         console.error('[Payment Return] Error redirect URL:', errorRedirect);
         return res.redirect(errorRedirect);
@@ -213,6 +267,49 @@ export async function handleAutomaticResponse(req: Request, res: Response) {
         return res.status(500).json({
             error: 'Internal server error',
             details: error instanceof Error ? error.message : String(error),
+        });
+    }
+}
+
+/**
+ * GET /api/payment/result
+ * Retrieve payment result from token (one-time read)
+ */
+export async function getPaymentResult(req: Request, res: Response) {
+    try {
+        const token = req.cookies?.payment_result_token;
+
+        if (!token) {
+            return res.status(404).json({
+                error: 'Payment result not found',
+            });
+        }
+
+        const result = getStoredResult(token);
+
+        if (!result) {
+            // Clear invalid cookie
+            res.clearCookie('payment_result_token');
+            return res.status(404).json({
+                error: 'Payment result expired or not found',
+            });
+        }
+
+        // Delete token after reading (one-time use)
+        deletePaymentResult(token);
+        res.clearCookie('payment_result_token');
+
+        return res.status(200).json({
+            success: true,
+            status: result.status,
+            responseCode: result.responseCode,
+            transactionReference: result.transactionReference,
+            customerId: result.customerId,
+        });
+    } catch (error) {
+        console.error('[Payment Result] Error:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
         });
     }
 }

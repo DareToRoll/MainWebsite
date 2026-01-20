@@ -37,10 +37,18 @@ export const CartProvider = ({ children }) => {
 	}, [items])
 
 	const addItem = (gameId, quantity = 1) => {
-		setItems((prev) => ({
-			...prev,
-			[gameId]: (prev[gameId] || 0) + quantity,
-		}))
+		setItems((prev) => {
+			// Idempotent: if item already exists, leave quantity unchanged
+			// Only add if item is not present in cart
+			if (prev[gameId] !== undefined) {
+				return prev // No change if already in cart
+			}
+			// First time adding: set quantity to specified value (default 1)
+			return {
+				...prev,
+				[gameId]: quantity,
+			}
+		})
 		setHintVisible(true)
 	}
 

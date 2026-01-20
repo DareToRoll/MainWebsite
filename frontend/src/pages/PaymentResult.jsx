@@ -1,50 +1,141 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import './PaymentResult.css'
 
+function getApiBaseUrl() {
+	return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+}
+
 export default function PaymentResult() {
 	const navigate = useNavigate()
-	const [searchParams] = useSearchParams()
 	const { clearCart } = useCart()
 	const [countdown, setCountdown] = useState(10)
-
-	const status = searchParams.get('status')
-	const responseCode = searchParams.get('responseCode')
-	const transactionReference = searchParams.get('transactionReference')
-	const reason = searchParams.get('reason')
+	const [result, setResult] = useState(null)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState(null)
+	const timerRef = useRef(null)
+	const hasNavigatedRef = useRef(false)
 
 	useEffect(() => {
-		// Clear cart on successful payment
-		if (status === 'success') {
-			clearCart()
+		// Fetch payment result from API
+		const fetchResult = async () => {
+			try {
+				const apiBaseUrl = getApiBaseUrl()
+				const response = await fetch(`${apiBaseUrl}/api/payment/result`, {
+					credentials: 'include',
+				})
+
+				if (!response.ok) {
+					if (response.status === 404) {
+						setError('Résultat de paiement introuvable ou expiré.')
+					} else {
+						setError('Erreur lors de la récupération du résultat.')
+					}
+					setLoading(false)
+					return
+				}
+
+				const data = await response.json()
+				if (data.success) {
+					setResult({
+						status: data.status,
+						responseCode: data.responseCode,
+						transactionReference: data.transactionReference,
+						customerId: data.customerId,
+					})
+
+					// Clear cart on successful payment
+					if (data.status === 'success') {
+						clearCart()
+					}
+				} else {
+					setError('Résultat de paiement invalide.')
+				}
+			} catch (err) {
+				console.error('[PaymentResult] Error fetching result:', err)
+				setError('Erreur lors de la récupération du résultat.')
+			} finally {
+				setLoading(false)
+			}
 		}
 
-		// Auto-redirect countdown
-		const timer = setInterval(() => {
+		fetchResult()
+	}, [clearCart])
+
+	// Countdown timer
+	useEffect(() => {
+		if (!result || hasNavigatedRef.current) return
+
+		timerRef.current = setInterval(() => {
 			setCountdown((prev) => {
 				if (prev <= 1) {
-					clearInterval(timer)
-					navigate(status === 'success' ? '/shop' : '/confirm-purchase')
+					if (timerRef.current) {
+						clearInterval(timerRef.current)
+						timerRef.current = null
+					}
+					if (!hasNavigatedRef.current) {
+						hasNavigatedRef.current = true
+						navigate(result.status === 'success' ? '/shop' : '/confirm-purchase', { replace: true })
+					}
 					return 0
 				}
 				return prev - 1
 			})
 		}, 1000)
 
-		return () => clearInterval(timer)
-	}, [status, navigate, clearCart])
+		return () => {
+			if (timerRef.current) {
+				clearInterval(timerRef.current)
+				timerRef.current = null
+			}
+		}
+	}, [result, navigate])
 
-	const handleRedirect = () => {
-		if (status === 'success') {
-			navigate('/shop')
+	const handleRedirect = (e) => {
+		e.preventDefault()
+		if (hasNavigatedRef.current) return
+		hasNavigatedRef.current = true
+
+		if (timerRef.current) {
+			clearInterval(timerRef.current)
+			timerRef.current = null
+		}
+
+		if (result?.status === 'success') {
+			navigate('/shop', { replace: true })
 		} else {
-			navigate('/confirm-purchase')
+			navigate('/confirm-purchase', { replace: true })
 		}
 	}
 
+	if (loading) {
+		return (
+			<section className="page payment-result-page">
+				<div className="payment-result-container card">
+					<p className="payment-result-message">Chargement du résultat...</p>
+				</div>
+			</section>
+		)
+	}
+
+	if (error || !result) {
+		return (
+			<section className="page payment-result-page">
+				<div className="payment-result-container card">
+					<div className="payment-result-icon payment-result-icon-error">⚠</div>
+					<h1 className="payment-result-title">Erreur</h1>
+					<p className="payment-result-message">{error || 'Résultat de paiement introuvable.'}</p>
+					<button className="btn btn-primary" onClick={() => navigate('/shop')}>
+						Retour à la boutique
+					</button>
+				</div>
+			</section>
+		)
+	}
+
 	const renderContent = () => {
-		switch (status) {
+		switch (result.status) {
 			case 'success':
 				return (
 					<>
@@ -54,9 +145,9 @@ export default function PaymentResult() {
 							Votre paiement a été traité avec succès. Vous allez recevoir un email de
 							confirmation dans quelques instants.
 						</p>
-						{transactionReference && (
+						{result.transactionReference && (
 							<p className="payment-result-reference">
-								Référence de transaction : <strong>{transactionReference}</strong>
+								Référence de transaction : <strong>{result.transactionReference}</strong>
 							</p>
 						)}
 						<p className="payment-result-redirect">
@@ -74,15 +165,14 @@ export default function PaymentResult() {
 						<p className="payment-result-message">
 							Vous avez annulé le paiement. Aucun montant n'a été débité.
 						</p>
-						{transactionReference && (
+						{result.transactionReference && (
 							<p className="payment-result-reference">
-								Référence de transaction : <strong>{transactionReference}</strong>
+								Référence de transaction : <strong>{result.transactionReference}</strong>
 							</p>
 						)}
 						<p className="payment-result-redirect">
 							Redirection automatique vers la page de confirmation dans {countdown}{' '}
-							seconde
-							{countdown > 1 ? 's' : ''}...
+							seconde{countdown > 1 ? 's' : ''}...
 						</p>
 					</>
 				)
@@ -95,12 +185,11 @@ export default function PaymentResult() {
 						<h1 className="payment-result-title">Erreur de paiement</h1>
 						<p className="payment-result-message">
 							Une erreur s'est produite lors du traitement de votre paiement.
-							{responseCode && ` (Code: ${responseCode})`}
-							{reason && ` Raison: ${reason}`}
+							{result.responseCode && ` (Code: ${result.responseCode})`}
 						</p>
-						{transactionReference && (
+						{result.transactionReference && (
 							<p className="payment-result-reference">
-								Référence de transaction : <strong>{transactionReference}</strong>
+								Référence de transaction : <strong>{result.transactionReference}</strong>
 							</p>
 						)}
 						<p className="payment-result-message">
@@ -109,8 +198,7 @@ export default function PaymentResult() {
 						</p>
 						<p className="payment-result-redirect">
 							Redirection automatique vers la page de confirmation dans {countdown}{' '}
-							seconde
-							{countdown > 1 ? 's' : ''}...
+							seconde{countdown > 1 ? 's' : ''}...
 						</p>
 					</>
 				)
@@ -122,7 +210,7 @@ export default function PaymentResult() {
 			<div className="payment-result-container card">
 				{renderContent()}
 				<button className="btn btn-primary" onClick={handleRedirect}>
-					{status === 'success' ? 'Retour à la boutique' : 'Réessayer'}
+					{result.status === 'success' ? 'Retour à la boutique' : 'Réessayer'}
 				</button>
 			</div>
 		</section>
