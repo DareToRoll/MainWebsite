@@ -1,20 +1,15 @@
-import { Router } from 'express'
-/* import {
-    initiatePayment,
-    handlePaymentResponse,
-} from '../controllers/paymentController' */
+import { Router } from 'express';
+import { initiatePayment, handleNormalReturn, handleAutomaticResponse } from '../controllers/paymentController';
 
-const router = Router()
+const router = Router();
 
-// Initiate a new payment
-/* router.post('/payment/initiate', initiatePayment)
+// POST /api/payment/init - Initialize payment and get Sherlock's redirection fields
+router.post('/payment/init', initiatePayment);
 
-// Handle payment response/callback from Sherlock's
-router.post('/payment/callback', handlePaymentResponse)
-router.get('/payment/callback', handlePaymentResponse)
+// POST /api/payment/return - Handle normalReturnUrl callback (user-facing redirect)
+router.post('/payment/return', handleNormalReturn);
 
-// Handle normal return (user comes back from payment page)
-router.get('/payment/return', handlePaymentResponse)
-router.post('/payment/return', handlePaymentResponse) */
+// POST /api/payment/auto - Handle automaticResponseUrl callback (server-to-server)
+router.post('/payment/auto', handleAutomaticResponse);
 
-export default router
+export default router;

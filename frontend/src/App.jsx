@@ -7,6 +7,7 @@ import Contact from './pages/Contact'
 import GameDetails from './pages/GameDetails'
 import Auth from './pages/Auth'
 import ConfirmPurchase from './pages/ConfirmPurchase'
+import PaymentResult from './pages/PaymentResult'
 
 function App() {
 	return (
@@ -20,6 +21,7 @@ function App() {
 				<Route path="/login" element={<Auth />} />
 				<Route path="/auth" element={<Auth />} />
 				<Route path="/confirm-purchase" element={<ConfirmPurchase />} />
+				<Route path="/payment-result" element={<PaymentResult />} />
 			</Routes>
 		</Layout>
 	)

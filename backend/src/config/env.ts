@@ -15,4 +15,13 @@ export const env = {
     PORT: Number(process.env.PORT || 3000),
 
     FRONTEND_ORIGINS: process.env.FRONTEND_ORIGINS ?? "http://localhost:5173",
+    FRONTEND_BASE_URL: required("FRONTEND_BASE_URL"),
+
+    // Sherlock's / SIPS Paypage config
+    SHERLOCK_PAYMENT_INIT_URL: required("SHERLOCK_PAYMENT_INIT_URL"),
+    SHERLOCK_SECRET_KEY: required("SHERLOCK_SECRET_KEY"),
+    SHERLOCK_MERCHANT_ID: required("SHERLOCK_MERCHANT_ID"),
+    SHERLOCK_KEY_VERSION: required("SHERLOCK_KEY_VERSION"),
+    SHERLOCK_INTERFACE_VERSION: process.env.SHERLOCK_INTERFACE_VERSION ?? "HP_3.0",
+    SHERLOCK_SEAL_ALGORITHM: (process.env.SHERLOCK_SEAL_ALGORITHM ?? "HMAC-SHA-256") as "HMAC-SHA-256" | "SHA-256",
 }

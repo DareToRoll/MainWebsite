@@ -20,21 +20,22 @@ app.use(cors({
     credentials: false,
 }));
 
-app.use(express.json())
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // Health check
 app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' })
-})
+});
 
 // Routes API
-app.use('/api', contactRoutes)
-app.use('/api', paymentRoutes)
+app.use('/api', contactRoutes);
+app.use('/api', paymentRoutes);
 
 // 404 API
 app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Route API non trouvée.' })
-})
+});
 
 // Middleware global d'erreur (si tu fais next(err))
 app.use(
@@ -47,6 +48,6 @@ app.use(
         console.error('Unhandled error:', err)
         res.status(500).json({ error: 'Erreur serveur interne.' })
     },
-)
+);
 
 export default app;

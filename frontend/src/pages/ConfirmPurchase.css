@@ -4,6 +4,19 @@
 	gap: 2.5rem;
 }
 
+.form-error-banner {
+	background-color: #f8d7da;
+	color: #721c24;
+	padding: 1rem;
+	border-radius: 8px;
+	border: 1px solid #f5c6cb;
+	margin-bottom: 1rem;
+}
+
+.form-error-banner strong {
+	font-weight: 600;
+}
+
 .confirm-purchase-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);

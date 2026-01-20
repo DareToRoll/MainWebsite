@@ -1,9 +1,10 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useCart } from '../context/CartContext'
+import { processPayment } from '../lib/payments'
 import catalog from '../content/catalog.json'
 import './ConfirmPurchase.css'
 
@@ -47,6 +48,7 @@ const confirmPurchaseSchema = z.object({
 export default function ConfirmPurchase() {
 	const navigate = useNavigate()
 	const { items, closeCart } = useCart()
+	const [paymentError, setPaymentError] = useState(null)
 	const {
 		register,
 		handleSubmit,
@@ -85,9 +87,42 @@ export default function ConfirmPurchase() {
 	}, [hasItems, navigate])
 
 	const onSubmit = async (data) => {
-		// TODO: Navigate to payment step (e.g., /payment route or Sherlock form)
-		console.log('Proceed to payment with data:', data)
-		navigate('/payment', { state: { customerData: data } })
+		try {
+			setPaymentError(null)
+
+			// Generate a unique order ID
+			const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+
+			// Prepare return context with customer data (will be passed through payment flow)
+			const returnContext = JSON.stringify({
+				orderId,
+				customerEmail: data.email,
+				items: entries.map(([gameId, quantity]) => ({ gameId, quantity })),
+			})
+
+			// Convert total price from euros to cents for Sherlock's
+			const amountInCents = Math.round(totalPrice * 100)
+
+			console.log('[ConfirmPurchase] Initiating payment:', {
+				amount: amountInCents,
+				orderId,
+				email: data.email,
+			})
+
+			// Process payment: initialize and redirect to Paypage
+			await processPayment({
+				amount: amountInCents,
+				orderId,
+				customerEmail: data.email,
+				returnContext,
+			})
+
+			// Note: User will be redirected to Sherlock's Paypage
+			// After payment, they will be redirected back to /payment-result
+		} catch (error) {
+			console.error('[ConfirmPurchase] Payment error:', error)
+			setPaymentError(error.message || 'Une erreur est survenue lors de l\'initialisation du paiement.')
+		}
 	}
 
 	if (!hasItems) {
@@ -149,6 +184,12 @@ export default function ConfirmPurchase() {
 					<h2 className="confirm-purchase-section-title">
 						Informations de facturation
 					</h2>
+
+					{paymentError && (
+						<div className="form-error-banner" role="alert">
+							<strong>Erreur :</strong> {paymentError}
+						</div>
+					)}
 
 					<div className="form-row">
 						<div className="form-group">
