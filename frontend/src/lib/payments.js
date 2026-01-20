@@ -89,7 +89,6 @@ export async function processPayment(paymentData) {
 		const { redirectionUrl, redirectionData, redirectionVersion } = await initializePayment(paymentData)
 		submitPaymentForm(redirectionUrl, redirectionData, redirectionVersion)
 	} catch (error) {
-		console.error('[Payment] Error processing payment:', error)
 		throw error
 	}
 }

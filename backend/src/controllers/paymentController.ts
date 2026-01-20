@@ -122,15 +122,7 @@ export async function handleNormalReturn(req: Request, res: Response) {
                 status: 'error',
             });
 
-            const isProduction = env.NODE_ENV === 'production';
-            res.cookie('payment_result_token', errorToken, {
-                httpOnly: true,
-                secure: isProduction,
-                sameSite: 'lax',
-                maxAge: 300000,
-            });
-
-            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result`);
+            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`);
         }
 
         // Verify callback seal
@@ -149,15 +141,7 @@ export async function handleNormalReturn(req: Request, res: Response) {
                 status: 'error',
             });
 
-            const isProduction = env.NODE_ENV === 'production';
-            res.cookie('payment_result_token', errorToken, {
-                httpOnly: true,
-                secure: isProduction,
-                sameSite: 'lax',
-                maxAge: 300000,
-            });
-
-            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result`);
+            return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`);
         }
 
         // Determine outcome
@@ -168,6 +152,7 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         // Generate secure token for result storage
         const token = crypto.randomBytes(16).toString('hex');
+        console.log('[Payment Return] Generated token:', token);
         
         // Store result in memory (TTL handled by store)
         storePaymentResult(token, {
@@ -176,17 +161,11 @@ export async function handleNormalReturn(req: Request, res: Response) {
             transactionReference: outcome.transactionReference,
             customerId: outcome.customerId,
         });
+        console.log('[Payment Return] Result stored in memory store');
 
-        // Set httpOnly cookie and redirect without query params
-        const isProduction = env.NODE_ENV === 'production';
-        res.cookie('payment_result_token', token, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: 'lax',
-            maxAge: 300000, // 5 minutes
-        });
-
-        const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result`;
+        // Since frontend and backend are on different domains, we need to pass token via URL
+        // The token will be used once and then deleted, so it's safe for a short-lived token
+        const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result?token=${token}`;
         console.log('[Payment Return] Redirecting to:', redirectUrl);
 
         return res.redirect(redirectUrl);
@@ -202,17 +181,9 @@ export async function handleNormalReturn(req: Request, res: Response) {
             status: 'error',
         });
 
-        const isProduction = env.NODE_ENV === 'production';
-        res.cookie('payment_result_token', errorToken, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: 'lax',
-            maxAge: 300000,
-        });
-
         const errorRedirect = env.FRONTEND_BASE_URL 
-            ? `${env.FRONTEND_BASE_URL}/payment-result`
-            : '/payment-result';
+            ? `${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`
+            : `/payment-result?token=${errorToken}`;
         
         console.error('[Payment Return] Error redirect URL:', errorRedirect);
         return res.redirect(errorRedirect);
@@ -277,14 +248,14 @@ export async function handleAutomaticResponse(req: Request, res: Response) {
  */
 export async function getPaymentResult(req: Request, res: Response) {
     console.log('[Payment Result] GET /api/payment/result called');
-    console.log('[Payment Result] Cookies:', req.cookies);
-    console.log('[Payment Result] Cookie parser working:', typeof req.cookies);
+    console.log('[Payment Result] Query params:', req.query);
     
     try {
-        const token = req.cookies?.payment_result_token;
-        console.log('[Payment Result] Token from cookie:', token ? 'present' : 'missing');
+        // Get token from query parameter (frontend and backend on different domains)
+        const token = req.query.token as string;
+        console.log('[Payment Result] Token from query:', token ? 'present' : 'missing');
 
-        if (!token) {
+        if (!token || typeof token !== 'string') {
             console.log('[Payment Result] No token found, returning 404');
             return res.status(404).json({
                 error: 'Payment result not found',
@@ -296,9 +267,7 @@ export async function getPaymentResult(req: Request, res: Response) {
         console.log('[Payment Result] Result from store:', result ? 'found' : 'not found');
 
         if (!result) {
-            console.log('[Payment Result] Result not found or expired, clearing cookie');
-            // Clear invalid cookie
-            res.clearCookie('payment_result_token');
+            console.log('[Payment Result] Result not found or expired');
             return res.status(404).json({
                 error: 'Payment result expired or not found',
             });
@@ -307,7 +276,6 @@ export async function getPaymentResult(req: Request, res: Response) {
         console.log('[Payment Result] Returning result:', result.status);
         // Delete token after reading (one-time use)
         deletePaymentResult(token);
-        res.clearCookie('payment_result_token');
 
         return res.status(200).json({
             success: true,

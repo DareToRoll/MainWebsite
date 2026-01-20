@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import './PaymentResult.css'
 
@@ -9,6 +9,7 @@ function getApiBaseUrl() {
 
 export default function PaymentResult() {
 	const navigate = useNavigate()
+	const [searchParams] = useSearchParams()
 	const { clearCart } = useCart()
 	const [countdown, setCountdown] = useState(10)
 	const [result, setResult] = useState(null)
@@ -20,11 +21,17 @@ export default function PaymentResult() {
 	useEffect(() => {
 		// Fetch payment result from API
 		const fetchResult = async () => {
+			const token = searchParams.get('token')
+			
+			if (!token) {
+				setError('Résultat de paiement introuvable.')
+				setLoading(false)
+				return
+			}
+
 			try {
 				const apiBaseUrl = getApiBaseUrl()
-				const response = await fetch(`${apiBaseUrl}/api/payment/result`, {
-					credentials: 'include',
-				})
+				const response = await fetch(`${apiBaseUrl}/api/payment/result?token=${encodeURIComponent(token)}`)
 
 				if (!response.ok) {
 					if (response.status === 404) {
@@ -53,7 +60,6 @@ export default function PaymentResult() {
 					setError('Résultat de paiement invalide.')
 				}
 			} catch (err) {
-				console.error('[PaymentResult] Error fetching result:', err)
 				setError('Erreur lors de la récupération du résultat.')
 			} finally {
 				setLoading(false)
@@ -61,7 +67,7 @@ export default function PaymentResult() {
 		}
 
 		fetchResult()
-	}, [clearCart])
+	}, [clearCart, searchParams])
 
 	// Countdown timer
 	useEffect(() => {

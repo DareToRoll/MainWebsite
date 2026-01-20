@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -47,7 +47,7 @@ const confirmPurchaseSchema = z.object({
 
 export default function ConfirmPurchase() {
 	const navigate = useNavigate()
-	const { items, closeCart } = useCart()
+	const { items } = useCart()
 	const [paymentError, setPaymentError] = useState(null)
 	const {
 		register,
@@ -102,12 +102,6 @@ export default function ConfirmPurchase() {
 
 			// Convert total price from euros to cents for Sherlock's
 			const amountInCents = Math.round(totalPrice * 100)
-
-			console.log('[ConfirmPurchase] Initiating payment:', {
-				amount: amountInCents,
-				orderId,
-				email: data.email,
-			})
 
 			// Process payment: initialize and redirect to Paypage
 			await processPayment({
