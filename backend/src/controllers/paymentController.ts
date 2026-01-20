@@ -93,26 +93,41 @@ export async function initiatePayment(req: Request, res: Response) {
  */
 export async function handleNormalReturn(req: Request, res: Response) {
     try {
+        // Log raw body for debugging
+        console.log('[Payment Return] Raw body keys:', Object.keys(req.body || {}));
+        console.log('[Payment Return] Content-Type:', req.get('Content-Type'));
+        console.log('[Payment Return] Body:', JSON.stringify(req.body, null, 2));
+
         const { Data, Seal, Encode, InterfaceVersion } = req.body || {};
 
         console.log('[Payment Return] Received callback');
+        console.log('[Payment Return] Data present:', !!Data);
+        console.log('[Payment Return] Seal present:', !!Seal);
+        console.log('[Payment Return] Encode:', Encode);
+        console.log('[Payment Return] InterfaceVersion:', InterfaceVersion);
 
         if (!Data || !Seal) {
             console.error('[Payment Return] Missing Data or Seal');
+            console.error('[Payment Return] Data:', Data ? 'present' : 'missing');
+            console.error('[Payment Return] Seal:', Seal ? 'present' : 'missing');
             return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=missing_fields`);
         }
 
         // Verify callback seal
+        console.log('[Payment Return] Verifying seal...');
         const verification = sherlockPaypage.verifyAndParseCallback({ Data, Seal, Encode, InterfaceVersion });
 
+        console.log('[Payment Return] Verification result:', verification.ok);
         if (!verification.ok) {
             console.error('[Payment Return] Seal verification failed');
             console.error('[Payment Return] Expected:', verification.expectedSeal);
             console.error('[Payment Return] Provided:', verification.providedSeal);
+            console.error('[Payment Return] Data raw:', verification.dataRaw.substring(0, 100));
             return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=invalid_seal`);
         }
 
         // Determine outcome
+        console.log('[Payment Return] Parsing outcome...');
         const outcome = sherlockPaypage.getOutcomeFromCallback(verification.parsed);
 
         console.log('[Payment Return] Outcome:', outcome.status, 'ResponseCode:', outcome.responseCode);
@@ -127,11 +142,22 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result?${queryParams.toString()}`;
         console.log('[Payment Return] Redirecting to:', redirectUrl);
+        console.log('[Payment Return] FRONTEND_BASE_URL:', env.FRONTEND_BASE_URL);
 
         return res.redirect(redirectUrl);
     } catch (error) {
         console.error('[Payment Return] Error:', error);
-        return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=server_error`);
+        console.error('[Payment Return] Error name:', error instanceof Error ? error.name : 'unknown');
+        console.error('[Payment Return] Error message:', error instanceof Error ? error.message : String(error));
+        console.error('[Payment Return] Error stack:', error instanceof Error ? error.stack : 'no stack');
+        
+        // Ensure we have FRONTEND_BASE_URL even in error case
+        const errorRedirect = env.FRONTEND_BASE_URL 
+            ? `${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=server_error`
+            : '/payment-result?status=error&reason=server_error';
+        
+        console.error('[Payment Return] Error redirect URL:', errorRedirect);
+        return res.redirect(errorRedirect);
     }
 }
 
