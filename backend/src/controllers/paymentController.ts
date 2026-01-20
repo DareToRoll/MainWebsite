@@ -278,19 +278,25 @@ export async function handleAutomaticResponse(req: Request, res: Response) {
 export async function getPaymentResult(req: Request, res: Response) {
     console.log('[Payment Result] GET /api/payment/result called');
     console.log('[Payment Result] Cookies:', req.cookies);
+    console.log('[Payment Result] Cookie parser working:', typeof req.cookies);
     
     try {
         const token = req.cookies?.payment_result_token;
+        console.log('[Payment Result] Token from cookie:', token ? 'present' : 'missing');
 
         if (!token) {
+            console.log('[Payment Result] No token found, returning 404');
             return res.status(404).json({
                 error: 'Payment result not found',
             });
         }
 
+        console.log('[Payment Result] Looking up result for token:', token);
         const result = getStoredResult(token);
+        console.log('[Payment Result] Result from store:', result ? 'found' : 'not found');
 
         if (!result) {
+            console.log('[Payment Result] Result not found or expired, clearing cookie');
             // Clear invalid cookie
             res.clearCookie('payment_result_token');
             return res.status(404).json({
@@ -298,6 +304,7 @@ export async function getPaymentResult(req: Request, res: Response) {
             });
         }
 
+        console.log('[Payment Result] Returning result:', result.status);
         // Delete token after reading (one-time use)
         deletePaymentResult(token);
         res.clearCookie('payment_result_token');
@@ -311,6 +318,7 @@ export async function getPaymentResult(req: Request, res: Response) {
         });
     } catch (error) {
         console.error('[Payment Result] Error:', error);
+        console.error('[Payment Result] Error stack:', error instanceof Error ? error.stack : 'no stack');
         return res.status(500).json({
             error: 'Internal server error',
         });
