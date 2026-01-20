@@ -34,10 +34,15 @@ export async function initiatePayment(req: Request, res: Response) {
             });
         }
 
-        // Build callback URLs
-        const backendBaseUrl = req.protocol + '://' + req.get('host');
+        // Build callback URLs - handle Railway SSL termination
+        // Check X-Forwarded-Proto header for proper protocol detection behind proxy
+        const protocol = req.get('X-Forwarded-Proto') || req.protocol;
+        const backendBaseUrl = protocol + '://' + req.get('host');
         const normalReturnUrl = `${backendBaseUrl}/api/payment/return`;
         const automaticResponseUrl = `${backendBaseUrl}/api/payment/auto`;
+
+        console.log('[Payment Init] Backend base URL:', backendBaseUrl);
+        console.log('[Payment Init] Normal return URL:', normalReturnUrl);
 
         console.log('[Payment Init] Amount:', numericAmount, 'OrderId:', orderId, 'Email:', customerEmail);
 
@@ -120,7 +125,10 @@ export async function handleNormalReturn(req: Request, res: Response) {
             customerId: outcome.customerId ?? '',
         });
 
-        return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?${queryParams.toString()}`);
+        const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result?${queryParams.toString()}`;
+        console.log('[Payment Return] Redirecting to:', redirectUrl);
+
+        return res.redirect(redirectUrl);
     } catch (error) {
         console.error('[Payment Return] Error:', error);
         return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?status=error&reason=server_error`);
