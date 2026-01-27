@@ -150,6 +150,41 @@ export default function ConfirmPurchase() {
 						country: data.billingCountry,
 					}
 
+			// Build cart items for order context
+			const cartItems = entries.map(([gameId, quantity]) => {
+				const game = gamesById.get(gameId)
+				return {
+					id: gameId,
+					title: game?.title || 'Unknown',
+					quantity,
+					priceValue: game?.priceValue || 0,
+				}
+			})
+
+			// Calculate shipping and tax (set to 0 for now)
+			const shippingCost = 0
+			const taxAmount = 0
+
+			// Build order context
+			const orderContext = {
+				orderId,
+				customer: {
+					email: data.email,
+					firstName: data.firstName,
+					lastName: data.lastName,
+					phone: data.phone,
+				},
+				shippingAddress,
+				billingAddress: data.billingSameAsShipping ? undefined : billingAddress,
+				items: cartItems,
+				totals: {
+					subtotal: totalPrice,
+					shipping: shippingCost,
+					tax: taxAmount,
+					total: totalPrice + shippingCost + taxAmount,
+				},
+			}
+
 			// Convert total price from euros to cents for Sherlock's
 			const amountInCents = Math.round(totalPrice * 100)
 
@@ -158,6 +193,7 @@ export default function ConfirmPurchase() {
 				amount: amountInCents,
 				orderId,
 				customerEmail: data.email,
+				orderContext,
 			})
 
 			// Note: User will be redirected to Sherlock's Paypage

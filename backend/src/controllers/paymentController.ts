@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { createSherlockPaypage, PaymentOutcome } from '../services/paymentService';
 import { env } from '../config/env';
 import { storePaymentResult, getPaymentResult as getStoredResult, deletePaymentResult } from '../services/paymentResultStore';
+import { storeOrderContext, getOrderContext } from '../services/orderContextStore';
+import { sendPaymentConfirmationEmail } from '../services/mailService';
 import crypto from 'crypto';
 
 const sherlockPaypage = createSherlockPaypage({
@@ -21,7 +23,7 @@ const sherlockPaypage = createSherlockPaypage({
  */
 export async function initiatePayment(req: Request, res: Response) {
     try {
-        const { amount, orderId, customerEmail } = req.body || {};
+        const { amount, orderId, customerEmail, orderContext } = req.body || {};
 
         if (!amount) {
             return res.status(400).json({
@@ -36,17 +38,17 @@ export async function initiatePayment(req: Request, res: Response) {
             });
         }
 
+        // Store order context if provided
+        if (orderContext && orderId) {
+            storeOrderContext(orderId, orderContext);
+        }
+
         // Build callback URLs - handle Railway SSL termination
         // Check X-Forwarded-Proto header for proper protocol detection behind proxy
         const protocol = req.get('X-Forwarded-Proto') || req.protocol;
         const backendBaseUrl = protocol + '://' + req.get('host');
         const normalReturnUrl = `${backendBaseUrl}/api/payment/return`;
         const automaticResponseUrl = `${backendBaseUrl}/api/payment/auto`;
-
-        console.log('[Payment Init] Backend base URL:', backendBaseUrl);
-        console.log('[Payment Init] Normal return URL:', normalReturnUrl);
-
-        console.log('[Payment Init] Amount:', numericAmount, 'OrderId:', orderId, 'Email:', customerEmail);
 
         const response = await sherlockPaypage.initPayment({
             amount: numericAmount,
@@ -56,8 +58,6 @@ export async function initiatePayment(req: Request, res: Response) {
             normalReturnUrl,
             automaticResponseUrl,
         });
-
-        console.log('[Payment Init] Response code:', response.redirectionStatusCode);
 
         // Check for init errors (94, 99, etc.)
         if (response.redirectionStatusCode !== '00') {
@@ -70,8 +70,6 @@ export async function initiatePayment(req: Request, res: Response) {
 
         // Extract redirection fields
         const redirectionFields = sherlockPaypage.requireInitSuccess(response);
-
-        console.log('[Payment Init] Success, redirectionUrl:', redirectionFields.redirectionUrl);
 
         return res.status(200).json({
             success: true,
@@ -93,29 +91,10 @@ export async function initiatePayment(req: Request, res: Response) {
  * Handle normalReturnUrl callback from Sherlock's (user-facing redirect)
  */
 export async function handleNormalReturn(req: Request, res: Response) {
-    console.log('[Payment Return] Handler called');
-    console.log('[Payment Return] Request method:', req.method);
-    console.log('[Payment Return] Request path:', req.path);
-    
     try {
-        // Log raw body for debugging
-        console.log('[Payment Return] Raw body keys:', Object.keys(req.body || {}));
-        console.log('[Payment Return] Content-Type:', req.get('Content-Type'));
-        console.log('[Payment Return] Body:', JSON.stringify(req.body, null, 2));
-
         const { Data, Seal, Encode, InterfaceVersion } = req.body || {};
 
-        console.log('[Payment Return] Received callback');
-        console.log('[Payment Return] Data present:', !!Data);
-        console.log('[Payment Return] Seal present:', !!Seal);
-        console.log('[Payment Return] Encode:', Encode);
-        console.log('[Payment Return] InterfaceVersion:', InterfaceVersion);
-
         if (!Data || !Seal) {
-            console.error('[Payment Return] Missing Data or Seal');
-            console.error('[Payment Return] Data:', Data ? 'present' : 'missing');
-            console.error('[Payment Return] Seal:', Seal ? 'present' : 'missing');
-            
             const errorToken = crypto.randomBytes(16).toString('hex');
             storePaymentResult(errorToken, {
                 status: 'error',
@@ -124,17 +103,9 @@ export async function handleNormalReturn(req: Request, res: Response) {
             return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`);
         }
 
-        // Verify callback seal
-        console.log('[Payment Return] Verifying seal...');
         const verification = sherlockPaypage.verifyAndParseCallback({ Data, Seal, Encode, InterfaceVersion });
 
-        console.log('[Payment Return] Verification result:', verification.ok);
         if (!verification.ok) {
-            console.error('[Payment Return] Seal verification failed');
-            console.error('[Payment Return] Expected:', verification.expectedSeal);
-            console.error('[Payment Return] Provided:', verification.providedSeal);
-            console.error('[Payment Return] Data raw:', verification.dataRaw.substring(0, 100));
-            
             const errorToken = crypto.randomBytes(16).toString('hex');
             storePaymentResult(errorToken, {
                 status: 'error',
@@ -143,11 +114,7 @@ export async function handleNormalReturn(req: Request, res: Response) {
             return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`);
         }
 
-        // Determine outcome
-        console.log('[Payment Return] Parsing outcome...');
         const outcome = sherlockPaypage.getOutcomeFromCallback(verification.parsed);
-
-        console.log('[Payment Return] Outcome:', outcome.status, 'ResponseCode:', outcome.responseCode);
 
         // Generate secure token for result storage
         const token = crypto.randomBytes(16).toString('hex');
@@ -160,21 +127,11 @@ export async function handleNormalReturn(req: Request, res: Response) {
             transactionReference: outcome.transactionReference,
             customerId: outcome.customerId,
         });
-        console.log('[Payment Return] Result stored in memory store');
 
-        // Since frontend and backend are on different domains, we need to pass token via URL
-        // The token will be used once and then deleted, so it's safe for a short-lived token
         const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result?token=${token}`;
-        console.log('[Payment Return] Redirecting to:', redirectUrl);
 
         return res.redirect(redirectUrl);
     } catch (error) {
-        console.error('[Payment Return] Error:', error);
-        console.error('[Payment Return] Error name:', error instanceof Error ? error.name : 'unknown');
-        console.error('[Payment Return] Error message:', error instanceof Error ? error.message : String(error));
-        console.error('[Payment Return] Error stack:', error instanceof Error ? error.stack : 'no stack');
-        
-        // Generate token for error case too
         const errorToken = crypto.randomBytes(16).toString('hex');
         storePaymentResult(errorToken, {
             status: 'error',
@@ -184,7 +141,6 @@ export async function handleNormalReturn(req: Request, res: Response) {
             ? `${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`
             : `/payment-result?token=${errorToken}`;
         
-        console.error('[Payment Return] Error redirect URL:', errorRedirect);
         return res.redirect(errorRedirect);
     }
 }
@@ -197,35 +153,45 @@ export async function handleAutomaticResponse(req: Request, res: Response) {
     try {
         const { Data, Seal, Encode, InterfaceVersion } = req.body || {};
 
-        console.log('[Payment Auto] Received callback');
-
         if (!Data || !Seal) {
             console.error('[Payment Auto] Missing Data or Seal');
             return res.status(400).json({ error: 'Missing Data or Seal' });
         }
 
-        // Verify callback seal
         const verification = sherlockPaypage.verifyAndParseCallback({ Data, Seal, Encode, InterfaceVersion });
 
         if (!verification.ok) {
-            console.error('[Payment Auto] Seal verification failed');
-            console.error('[Payment Auto] Expected:', verification.expectedSeal);
-            console.error('[Payment Auto] Provided:', verification.providedSeal);
             return res.status(400).json({ error: 'Invalid seal' });
         }
 
         // Determine outcome
         const outcome = sherlockPaypage.getOutcomeFromCallback(verification.parsed);
 
-        console.log('[Payment Auto] Outcome:', outcome.status, 'ResponseCode:', outcome.responseCode, 'TransactionRef:', outcome.transactionReference);
+        // Send confirmation email on success
+        if (outcome.responseCode === '00') {
+            // Extract orderId from parsed callback
+            let orderId: string | undefined;
+            if (verification.parsed.kind === 'json' || verification.parsed.kind === 'kv') {
+                const orderIdValue = verification.parsed.value['orderId'];
+                if (typeof orderIdValue === 'string') {
+                    orderId = orderIdValue;
+                }
+            }
 
-        // Here you would typically:
-        // - Update order status in database
-        // - Send confirmation email
-        // - Log the transaction
-        // - Trigger fulfillment process
+            if (orderId) {
+                const orderContext = getOrderContext(orderId);
+                if (orderContext) {
+                    // Send email asynchronously (best effort - don't block response)
+                    sendConfirmationEmail(orderContext).catch(err => {
+                        console.error('[Payment Auto] Failed to send confirmation email:', err);
+                    });
+                } else {
+                    console.warn('[Payment Auto] Order context not found for orderId:', orderId);
+                }
+            }
+        }
 
-        // For now, just acknowledge receipt
+        // Acknowledge receipt
         return res.status(200).json({
             success: true,
             status: outcome.status,
@@ -239,6 +205,51 @@ export async function handleAutomaticResponse(req: Request, res: Response) {
             details: error instanceof Error ? error.message : String(error),
         });
     }
+}
+
+async function sendConfirmationEmail(orderContext: any): Promise<void> {
+    const formatPrice = (amount: number): string => {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'EUR',
+        }).format(amount);
+    };
+
+    const dynamicTemplateData = {
+        customer: {
+            first_name: orderContext.customer.firstName,
+        },
+        order: {
+            id: orderContext.orderId,
+            date: new Date().toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            }),
+        },
+        items: orderContext.items.map((item: any) => ({
+            name: item.title,
+            quantity: item.quantity,
+            price_formatted: formatPrice(item.priceValue),
+        })),
+        totals: {
+            subtotal_formatted: formatPrice(orderContext.totals.subtotal),
+            shipping_formatted: formatPrice(orderContext.totals.shipping),
+            tax_formatted: formatPrice(orderContext.totals.tax),
+            total_formatted: formatPrice(orderContext.totals.total),
+        },
+        brand: {
+            name: 'Dice To Roll',
+        },
+        support: {
+            email: env.SENDGRID_FROM_EMAIL,
+        },
+    };
+
+    await sendPaymentConfirmationEmail(
+        orderContext.customer.email,
+        dynamicTemplateData
+    );
 }
 
 /**

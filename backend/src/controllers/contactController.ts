@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 //import { handleContactMessage } from '../services/mailService'
+import { sendTestEmail } from '../integrations/sendgridClient'
 
 /* export async function postContact(req: Request, res: Response) {
     try {
@@ -32,3 +33,35 @@ import { Request, Response } from 'express'
         })
     }
 } */
+
+export async function testSendEmail(req: Request, res: Response) {
+    try {
+        const { to, from } = req.body || {}
+
+        if (!to || !from) {
+            return res.status(400).json({
+                error: 'Les champs "to" et "from" sont obligatoires.',
+            })
+        }
+
+        if (!to.includes('@') || !from.includes('@')) {
+            return res.status(400).json({ 
+                error: 'Les adresses e-mail doivent être valides.' 
+            })
+        }
+
+        await sendTestEmail(to, from)
+        
+        console.log('Email sent successfully')
+        return res.status(200).json({ 
+            success: true,
+            message: 'Email sent successfully' 
+        })
+    } catch (error) {
+        console.error('Error sending test email:', error)
+        return res.status(500).json({
+            error: 'Erreur lors de l\'envoi de l\'email.',
+            details: error instanceof Error ? error.message : String(error),
+        })
+    }
+}
