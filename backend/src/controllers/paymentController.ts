@@ -239,7 +239,7 @@ async function sendConfirmationEmail(orderContext: any): Promise<void> {
             total_formatted: formatPrice(orderContext.totals.total),
         },
         brand: {
-            name: 'Dice To Roll',
+            name: 'Dare To Roll',
         },
         support: {
             email: env.SENDGRID_FROM_EMAIL,
