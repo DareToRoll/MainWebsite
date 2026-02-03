@@ -9,9 +9,20 @@ import 'react-phone-number-input/style.css'
 import { useCart } from '../context/CartContext'
 import { processPayment } from '../lib/payments'
 import catalog from '../content/catalog.json'
+import { getShippingCost, runShippingSanityChecks } from '../utils/shipping'
 import './ConfirmPurchase.css'
 
 const formatPrice = (amount) => `${amount.toFixed(2).replace('.', ',')} €`
+
+const COUNTRY_OPTIONS = ['Monaco', 'France', 'Andorre', 'Suisse']
+
+/** Donation options TTC (euros): 0, 0.50, 1, 2. Labels neutres pour éviter toute pression. */
+const DONATION_OPTIONS = [
+	{ value: 0, label: '0 €' },
+	{ value: 0.5, label: '0,50 €' },
+	{ value: 1, label: '1 €' },
+	{ value: 2, label: '2 €' },
+]
 
 const addressFields = {
 	street: z
@@ -27,9 +38,7 @@ const addressFields = {
 		.min(1, 'Le code postal est obligatoire')
 		.min(5, 'Le code postal doit contenir au moins 5 caractères'),
 	country: z
-		.string()
-		.min(1, 'Le pays est obligatoire')
-		.min(2, 'Le pays doit contenir au moins 2 caractères'),
+		.enum(COUNTRY_OPTIONS, { required_error: 'Le pays est obligatoire' }),
 }
 
 const confirmPurchaseSchema = z
@@ -54,6 +63,7 @@ const confirmPurchaseSchema = z
 				{ message: 'Numéro de téléphone invalide' },
 			),
 		billingSameAsShipping: z.boolean().default(true),
+		donationAmount: z.number().min(0).max(2),
 		deliveryInstructions: z.string().optional(),
 		...addressFields,
 		billingStreet: addressFields.street.optional(),
@@ -81,20 +91,41 @@ export default function ConfirmPurchase() {
 	const navigate = useNavigate()
 	const { items } = useCart()
 	const [paymentError, setPaymentError] = useState(null)
+	const [acceptedTerms, setAcceptedTerms] = useState(false)
 	const {
 		register,
 		handleSubmit,
 		control,
 		watch,
+		setValue,
+		clearErrors,
 		formState: { errors, isSubmitting },
 	} = useForm({
 		resolver: zodResolver(confirmPurchaseSchema),
 		defaultValues: {
 			billingSameAsShipping: true,
+			country: 'France',
+			billingCountry: 'France',
+			donationAmount: 0,
 		},
 	})
 
 	const billingSameAsShipping = watch('billingSameAsShipping')
+	const country = watch('country')
+	const donationAmount = watch('donationAmount') ?? 0
+
+	const isMonaco = country === 'Monaco'
+
+	useEffect(() => {
+		if (country === 'Monaco') {
+			setValue('city', 'Monaco')
+			setValue('postalCode', '98000')
+			clearErrors(['city', 'postalCode'])
+		} else {
+			setValue('city', '')
+			setValue('postalCode', '')
+		}
+	}, [country, setValue, clearErrors])
 
 	const entries = Object.entries(items)
 	const gamesById = useMemo(
@@ -119,11 +150,39 @@ export default function ConfirmPurchase() {
 		[entries],
 	)
 
+	const shippingCost = useMemo(
+		() => getShippingCost(totalItems, country ?? ''),
+		[totalItems, country],
+	)
+
+	// TVA 20%: base = products + shipping + donation (all TTC)
+	const donationTTC = useMemo(() => Number(donationAmount) || 0, [donationAmount])
+	const totalTTC = useMemo(
+		() => Math.round((totalPrice + shippingCost + donationTTC) * 100) / 100,
+		[totalPrice, shippingCost, donationTTC],
+	)
+	const totalHT = useMemo(() => Math.round((totalTTC / 1.20) * 100) / 100, [totalTTC])
+	const totalTVA = useMemo(() => Math.round((totalTTC - totalHT) * 100) / 100, [totalTTC, totalHT])
+	const totalPriceHT = useMemo(() => Math.round((totalPrice / 1.20) * 100) / 100, [totalPrice])
+
 	useEffect(() => {
 		if (!hasItems) {
 			navigate('/shop', { replace: true })
 		}
 	}, [hasItems, navigate])
+
+	useEffect(() => {
+		runShippingSanityChecks()
+	}, [])
+
+	// VAT sanity (dev): total TTC = total HT + total TVA; total TTC = products + shipping + donation
+	if (import.meta.env?.DEV) {
+		const ttcCheck = Math.abs(totalTTC - (totalHT + totalTVA)) < 0.02
+		const sumCheck = Math.abs(totalTTC - (totalPrice + shippingCost + donationTTC)) < 0.02
+		if (!ttcCheck || !sumCheck) {
+			console.warn('[ConfirmPurchase] VAT/total sanity:', { totalTTC, totalHT, totalTVA, totalPrice, shippingCost, donationTTC })
+		}
+	}
 
 	const onSubmit = async (data) => {
 		try {
@@ -161,9 +220,12 @@ export default function ConfirmPurchase() {
 				}
 			})
 
-			// Calculate shipping and tax (set to 0 for now)
-			const shippingCost = 0
-			const taxAmount = 0
+			// Totals (shipping, donation and VAT already computed in component state)
+			const orderShippingCost = shippingCost
+			const orderDonation = donationTTC
+			const orderTotalTTC = totalTTC
+			const orderTotalHT = totalHT
+			const orderTotalTVA = totalTVA
 
 			// Build order context
 			const orderContext = {
@@ -178,15 +240,23 @@ export default function ConfirmPurchase() {
 				billingAddress: data.billingSameAsShipping ? undefined : billingAddress,
 				items: cartItems,
 				totals: {
-					subtotal: totalPrice,
-					shipping: shippingCost,
-					tax: taxAmount,
-					total: totalPrice + shippingCost + taxAmount,
+					subtotal: orderTotalHT,
+					shipping: orderShippingCost,
+					donation: orderDonation,
+					tax: orderTotalTVA,
+					total: orderTotalTTC,
+				},
+				donationAnalytics: {
+					donationOptionsOffered: DONATION_OPTIONS.map((o) => o.value),
+					donationSelectedAmount: orderDonation,
+					donationSelectedLabel: DONATION_OPTIONS.find((o) => o.value === Number(data.donationAmount))?.label ?? `${orderDonation} €`,
+					cartTotalTTCBeforeDonation: Math.round((totalPrice + shippingCost) * 100) / 100,
+					totalItems,
 				},
 			}
 
-			// Convert total price from euros to cents for Sherlock's
-			const amountInCents = Math.round(totalPrice * 100)
+			// Convert total TTC from euros to cents for Sherlock's
+			const amountInCents = Math.round(orderTotalTTC * 100)
 
 			// Process payment: initialize and redirect to Paypage
 			await processPayment({
@@ -245,12 +315,40 @@ export default function ConfirmPurchase() {
 							)
 						})}
 					</ul>
-					<div className="confirm-purchase-total">
-						<p className="confirm-purchase-total-label">Total</p>
-						<p className="confirm-purchase-total-amount">
-							{formatPrice(totalPrice)} · {totalItems}{' '}
-							{totalItems <= 1 ? 'article' : 'articles'}
-						</p>
+					<div className="confirm-purchase-totals-breakdown">
+						<div className="confirm-purchase-totals-line">
+							<span className="confirm-purchase-totals-label">Sous-total HT</span>
+							<span className="confirm-purchase-totals-value">
+								{formatPrice(totalPriceHT)}
+							</span>
+						</div>
+						<div className="confirm-purchase-totals-line">
+							<span className="confirm-purchase-totals-label">Livraison</span>
+							<span className="confirm-purchase-totals-value">
+								{shippingCost > 0 ? formatPrice(shippingCost) : '—'}
+							</span>
+						</div>
+						{donationTTC > 0 && (
+							<div className="confirm-purchase-totals-line">
+								<span className="confirm-purchase-totals-label">Don</span>
+								<span className="confirm-purchase-totals-value">
+									{formatPrice(donationTTC)}
+								</span>
+							</div>
+						)}
+						<div className="confirm-purchase-totals-line">
+							<span className="confirm-purchase-totals-label">TVA (20%)</span>
+							<span className="confirm-purchase-totals-value">
+								{formatPrice(totalTVA)}
+							</span>
+						</div>
+						<div className="confirm-purchase-total">
+							<p className="confirm-purchase-total-label">Total TTC</p>
+							<p className="confirm-purchase-total-amount">
+								{formatPrice(totalTTC)} · {totalItems}{' '}
+								{totalItems <= 1 ? 'article' : 'articles'}
+							</p>
+						</div>
 					</div>
 				</div>
 
@@ -379,8 +477,10 @@ export default function ConfirmPurchase() {
 								id="city"
 								type="text"
 								placeholder="Ville"
+								readOnly={isMonaco}
 								aria-invalid={errors.city ? 'true' : 'false'}
 								aria-describedby={errors.city ? 'city-error' : undefined}
+								className={isMonaco ? 'input-readonly' : ''}
 								{...register('city')}
 							/>
 							{errors.city && (
@@ -396,10 +496,12 @@ export default function ConfirmPurchase() {
 								id="postalCode"
 								type="text"
 								placeholder="75001"
+								readOnly={isMonaco}
 								aria-invalid={errors.postalCode ? 'true' : 'false'}
 								aria-describedby={
 									errors.postalCode ? 'postalCode-error' : undefined
 								}
+								className={isMonaco ? 'input-readonly' : ''}
 								{...register('postalCode')}
 							/>
 							{errors.postalCode && (
@@ -416,14 +518,19 @@ export default function ConfirmPurchase() {
 
 					<div className="form-group">
 						<label htmlFor="country">Pays</label>
-						<input
+						<select
 							id="country"
-							type="text"
-							placeholder="France"
 							aria-invalid={errors.country ? 'true' : 'false'}
 							aria-describedby={errors.country ? 'country-error' : undefined}
 							{...register('country')}
-						/>
+						>
+							<option value="">Sélectionnez un pays</option>
+							{COUNTRY_OPTIONS.map((c) => (
+								<option key={c} value={c}>
+									{c}
+								</option>
+							))}
+						</select>
 						{errors.country && (
 							<span id="country-error" className="form-error" role="alert">
 								{errors.country.message}
@@ -508,14 +615,19 @@ export default function ConfirmPurchase() {
 
 							<div className="form-group">
 								<label htmlFor="billingCountry">Pays</label>
-								<input
+								<select
 									id="billingCountry"
-									type="text"
-									placeholder="France"
 									aria-invalid={errors.billingCountry ? 'true' : 'false'}
 									aria-describedby={errors.billingCountry ? 'billingCountry-error' : undefined}
 									{...register('billingCountry')}
-								/>
+								>
+									<option value="">Sélectionnez un pays</option>
+									{COUNTRY_OPTIONS.map((c) => (
+										<option key={c} value={c}>
+											{c}
+										</option>
+									))}
+								</select>
 								{errors.billingCountry && (
 									<span id="billingCountry-error" className="form-error" role="alert">
 										{errors.billingCountry.message}
@@ -524,6 +636,34 @@ export default function ConfirmPurchase() {
 							</div>
 						</div>
 					)}
+
+					<div className="form-group confirm-purchase-donation" data-donation-block>
+						<span className="confirm-purchase-donation-label">
+							Un petit coup de pouce pour nous soutenir, c'est ici :
+						</span>
+						<Controller
+							name="donationAmount"
+							control={control}
+							defaultValue={0}
+							render={({ field }) => (
+								<div className="confirm-purchase-donation-options" role="group" aria-label="Montant du don (TTC)">
+									{DONATION_OPTIONS.map((opt, index) => (
+										<label key={opt.value} className="confirm-purchase-donation-option">
+											<input
+												type="radio"
+												value={opt.value}
+												checked={field.value === opt.value}
+												onChange={() => field.onChange(opt.value)}
+												onBlur={field.onBlur}
+												ref={index === 0 ? field.ref : undefined}
+											/>
+											<span>{opt.label}</span>
+										</label>
+									))}
+								</div>
+							)}
+						/>
+					</div>
 
 					<div className="confirm-purchase-summary">
 						<div className="confirm-purchase-summary-item">
@@ -545,11 +685,33 @@ export default function ConfirmPurchase() {
 						</div>
 					</div>
 
-					<p className="contact-form-note">
-						En procédant au paiement, vous acceptez nos conditions générales de vente.
-					</p>
+					<div className="form-group-checkbox">
+						<label htmlFor="acceptedTerms">
+							<input
+								id="acceptedTerms"
+								type="checkbox"
+								checked={acceptedTerms}
+								onChange={(e) => setAcceptedTerms(e.target.checked)}
+							/>
+							<span>
+								J'accepte les{' '}
+								<a
+									href="/conditions-generales-de-vente"
+									target="_blank"
+									rel="noopener noreferrer"
+									onClick={(e) => e.stopPropagation()}
+								>
+									conditions générales de vente
+								</a>
+							</span>
+						</label>
+					</div>
 
-					<button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+					<button 
+						type="submit" 
+						className="btn btn-primary" 
+						disabled={!acceptedTerms || isSubmitting}
+					>
 						{isSubmitting ? 'Redirection...' : 'Procéder au paiement'}
 					</button>
 				</form>

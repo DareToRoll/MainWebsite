@@ -219,6 +219,32 @@
 	text-align: right;
 }
 
+.confirm-purchase-totals-breakdown {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid rgba(38, 14, 3, 0.1);
+	margin-top: 0.5rem;
+}
+
+.confirm-purchase-totals-line {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.confirm-purchase-totals-label {
+	font-size: 0.9rem;
+	color: var(--color-text-muted);
+}
+
+.confirm-purchase-totals-value {
+	font-size: 0.9rem;
+	color: var(--color-warm-dark);
+	font-weight: 500;
+}
+
 .confirm-purchase-total {
 	display: flex;
 	justify-content: space-between;
@@ -246,6 +272,46 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
+}
+
+/* Donation */
+.confirm-purchase-donation {
+	margin-top: 0.5rem;
+}
+
+.confirm-purchase-donation-label {
+	display: block;
+	font-size: 0.95rem;
+	font-weight: 500;
+	color: var(--color-warm-dark);
+	margin-bottom: 0.5rem;
+}
+
+.confirm-purchase-donation-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.confirm-purchase-donation-option {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	cursor: pointer;
+	font-size: 0.9rem;
+	color: var(--color-warm-dark);
+}
+
+.confirm-purchase-donation-option input {
+	accent-color: var(--color-accent, #b2733b);
+	cursor: pointer;
+}
+
+.input-readonly {
+	background: rgba(38, 14, 3, 0.06);
+	cursor: not-allowed;
+	color: var(--color-text-muted);
 }
 
 /* Responsive */
