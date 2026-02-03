@@ -220,12 +220,14 @@ export default function ConfirmPurchase() {
 				}
 			})
 
-			// Totals (shipping, donation and VAT already computed in component state)
-			const orderShippingCost = shippingCost
-			const orderDonation = donationTTC
-			const orderTotalTTC = totalTTC
-			const orderTotalHT = totalHT
-			const orderTotalTVA = totalTVA
+			// Recompute amount to pay from cart + form so it always matches what the user sees (products + shipping + donation)
+			const orderTotalItems = cartItems.reduce((sum, it) => sum + it.quantity, 0)
+			const orderShippingCost = getShippingCost(orderTotalItems, data.country ?? '')
+			const orderDonation = Number(data.donationAmount) || 0
+			const orderProductsTTC = cartItems.reduce((sum, it) => sum + (it.priceValue || 0) * it.quantity, 0)
+			const orderTotalTTC = Math.round((orderProductsTTC + orderShippingCost + orderDonation) * 100) / 100
+			const orderTotalHT = Math.round((orderTotalTTC / 1.20) * 100) / 100
+			const orderTotalTVA = Math.round((orderTotalTTC - orderTotalHT) * 100) / 100
 
 			// Build order context
 			const orderContext = {
@@ -250,12 +252,12 @@ export default function ConfirmPurchase() {
 					donationOptionsOffered: DONATION_OPTIONS.map((o) => o.value),
 					donationSelectedAmount: orderDonation,
 					donationSelectedLabel: DONATION_OPTIONS.find((o) => o.value === Number(data.donationAmount))?.label ?? `${orderDonation} €`,
-					cartTotalTTCBeforeDonation: Math.round((totalPrice + shippingCost) * 100) / 100,
-					totalItems,
+					cartTotalTTCBeforeDonation: Math.round((orderProductsTTC + orderShippingCost) * 100) / 100,
+					totalItems: orderTotalItems,
 				},
 			}
 
-			// Convert total TTC from euros to cents for Sherlock's
+			// Montant total à débiter = produits + livraison + don (en centimes pour l'API paiement)
 			const amountInCents = Math.round(orderTotalTTC * 100)
 
 			// Process payment: initialize and redirect to Paypage
