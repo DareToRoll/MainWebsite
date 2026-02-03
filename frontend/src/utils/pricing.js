@@ -37,6 +37,7 @@ export function calculateOrderTotals(cartItems, country, donationAmount = 0) {
 	const totalHT = roundEuro(taxableBaseTTC / 1.20)
 	const totalTVA = roundEuro(taxableBaseTTC - totalHT)
 	const productsHT = roundEuro(productsTTC / 1.20)
+	const shippingHT = roundEuro(shippingTTC / 1.20)
 
 	// Total TTC (products + shipping + donation)
 	const totalTTC = roundEuro(productsTTC + shippingTTC + donationTTC)
@@ -45,6 +46,7 @@ export function calculateOrderTotals(cartItems, country, donationAmount = 0) {
 		productsTTC,
 		productsHT,
 		shippingTTC,
+		shippingHT,
 		donationTTC,
 		totalHT,
 		totalTVA,

@@ -295,9 +295,9 @@ export default function ConfirmPurchase() {
 							</span>
 						</div>
 						<div className="confirm-purchase-totals-line">
-							<span className="confirm-purchase-totals-label">Livraison</span>
+							<span className="confirm-purchase-totals-label">Livraison HT</span>
 							<span className="confirm-purchase-totals-value">
-								{totals.shippingTTC > 0 ? formatPrice(totals.shippingTTC) : '—'}
+								{totals.shippingHT > 0 ? formatPrice(totals.shippingHT) : '—'}
 							</span>
 						</div>
 						{totals.donationTTC > 0 && (
