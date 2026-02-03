@@ -55,7 +55,12 @@ export default function PaymentResult() {
 				if (data.success) {
 					setResult({
 						status: data.status,
+						title: data.title,
+						message: data.message,
+						canRetry: data.canRetry,
+						nextAction: data.nextAction,
 						responseCode: data.responseCode,
+						acquirerResponseCode: data.acquirerResponseCode,
 						transactionReference: data.transactionReference,
 						customerId: data.customerId,
 						orderId: data.orderId,
@@ -123,24 +128,43 @@ export default function PaymentResult() {
 		if (result?.status === 'success') {
 			hasNavigatedRef.current = true
 			navigate('/shop', { replace: true })
-		} else {
+		} else if (result?.canRetry && result?.orderId) {
 			// Retry payment using stored order context
-			if (result?.orderId) {
-				try {
-					setLoading(true)
-					await retryPayment(result.orderId)
-					// User will be redirected to payment page
-				} catch (error) {
-					console.error('[PaymentResult] Retry error:', error)
-					setError(error.message || 'Erreur lors de la réinitialisation du paiement.')
-					setLoading(false)
-				}
-			} else {
-				// Fallback: navigate to confirm-purchase if no orderId
-				hasNavigatedRef.current = true
-				navigate('/confirm-purchase', { replace: true })
+			try {
+				setLoading(true)
+				await retryPayment(result.orderId)
+				// User will be redirected to payment page
+			} catch (error) {
+				console.error('[PaymentResult] Retry error:', error)
+				setError(error.message || 'Erreur lors de la réinitialisation du paiement.')
+				setLoading(false)
+			}
+		} else {
+			// Fallback: navigate to confirm-purchase if no orderId or can't retry
+			hasNavigatedRef.current = true
+			navigate('/confirm-purchase', { replace: true })
+		}
+	}
+
+	const getButtonText = () => {
+		if (result?.status === 'success') {
+			return 'Retour à la boutique'
+		}
+		if (result?.canRetry) {
+			switch (result.nextAction) {
+				case 'retry':
+					return 'Réessayer'
+				case 'use_another_card':
+					return 'Utiliser une autre carte'
+				case 'contact_bank':
+					return 'Retour'
+				case 'contact_support':
+					return 'Retour'
+				default:
+					return 'Réessayer'
 			}
 		}
+		return 'Retour'
 	}
 
 	if (loading) {
@@ -168,67 +192,48 @@ export default function PaymentResult() {
 		)
 	}
 
-	const renderContent = () => {
+	const getStatusIcon = () => {
 		switch (result.status) {
 			case 'success':
-				return (
-					<>
-						<div className="payment-result-icon payment-result-icon-success">✓</div>
-						<h1 className="payment-result-title">Paiement réussi !</h1>
-						<p className="payment-result-message">
-							Votre paiement a été traité avec succès. Vous allez recevoir un email de
-							confirmation dans quelques instants.
-						</p>
-						{result.transactionReference && (
-							<p className="payment-result-reference">
-								Référence de transaction : <strong>{result.transactionReference}</strong>
-							</p>
-						)}
-						<p className="payment-result-redirect">
-							Redirection automatique vers la boutique dans {countdown} seconde
-							{countdown > 1 ? 's' : ''}...
-						</p>
-					</>
-				)
-
+				return <div className="payment-result-icon payment-result-icon-success">✓</div>
 			case 'cancelled':
-				return (
-					<>
-						<div className="payment-result-icon payment-result-icon-cancelled">✕</div>
-						<h1 className="payment-result-title">Paiement annulé</h1>
-						<p className="payment-result-message">
-							Vous avez annulé le paiement. Aucun montant n'a été débité.
-						</p>
-						{result.transactionReference && (
-							<p className="payment-result-reference">
-								Référence de transaction : <strong>{result.transactionReference}</strong>
-							</p>
-						)}
-					</>
-				)
-
-			case 'error':
+				return <div className="payment-result-icon payment-result-icon-cancelled">✕</div>
+			case 'pending':
+				return <div className="payment-result-icon payment-result-icon-pending">⏳</div>
+			case 'declined':
+			case 'technical_error':
+			case 'configuration_error':
+			case 'unknown':
 			default:
-				return (
-					<>
-						<div className="payment-result-icon payment-result-icon-error">⚠</div>
-						<h1 className="payment-result-title">Erreur de paiement</h1>
-						<p className="payment-result-message">
-							Une erreur s'est produite lors du traitement de votre paiement.
-							{result.responseCode && ` (Code: ${result.responseCode})`}
-						</p>
-						{result.transactionReference && (
-							<p className="payment-result-reference">
-								Référence de transaction : <strong>{result.transactionReference}</strong>
-							</p>
-						)}
-						<p className="payment-result-message">
-							Veuillez réessayer ou contacter notre service client si le problème
-							persiste.
-						</p>
-					</>
-				)
+				return <div className="payment-result-icon payment-result-icon-error">⚠</div>
 		}
+	}
+
+	const renderContent = () => {
+		return (
+			<>
+				{getStatusIcon()}
+				<h1 className="payment-result-title">{result.title}</h1>
+				<p className="payment-result-message">{result.message}</p>
+				{result.transactionReference && (
+					<p className="payment-result-reference">
+						Référence de transaction : <strong>{result.transactionReference}</strong>
+					</p>
+				)}
+				{result.status === 'success' && (
+					<p className="payment-result-redirect">
+						Redirection automatique vers la boutique dans {countdown} seconde
+						{countdown > 1 ? 's' : ''}...
+					</p>
+				)}
+				{import.meta.env?.DEV && result.responseCode && (
+					<p className="payment-result-debug">
+						Code: {result.responseCode}
+						{result.acquirerResponseCode && ` / ${result.acquirerResponseCode}`}
+					</p>
+				)}
+			</>
+		)
 	}
 
 	return (
@@ -236,7 +241,7 @@ export default function PaymentResult() {
 			<div className="payment-result-container card">
 				{renderContent()}
 				<button className="btn btn-primary" onClick={handleRedirect}>
-					{result.status === 'success' ? 'Retour à la boutique' : 'Réessayer'}
+					{getButtonText()}
 				</button>
 			</div>
 		</section>

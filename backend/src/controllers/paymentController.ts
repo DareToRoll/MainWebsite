@@ -4,6 +4,7 @@ import { env } from '../config/env';
 import { storePaymentResult, getPaymentResult as getStoredResult, deletePaymentResult } from '../services/paymentResultStore';
 import { storeOrderContext, getOrderContext } from '../services/orderContextStore';
 import { sendPaymentConfirmationEmail } from '../services/mailService';
+import { mapPaymentOutcome } from '../utils/paymentOutcomeMapper';
 import crypto from 'crypto';
 
 const sherlockPaypage = createSherlockPaypage({
@@ -101,8 +102,9 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         if (!Data || !Seal) {
             const errorToken = crypto.randomBytes(16).toString('hex');
+            const errorDetails = mapPaymentOutcome(undefined, undefined);
             storePaymentResult(errorToken, {
-                status: 'error',
+                ...errorDetails,
             });
 
             return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`);
@@ -112,8 +114,9 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         if (!verification.ok) {
             const errorToken = crypto.randomBytes(16).toString('hex');
+            const errorDetails = mapPaymentOutcome(undefined, undefined);
             storePaymentResult(errorToken, {
-                status: 'error',
+                ...errorDetails,
             });
 
             return res.redirect(`${env.FRONTEND_BASE_URL}/payment-result?token=${errorToken}`);
@@ -121,14 +124,21 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         const outcome = sherlockPaypage.getOutcomeFromCallback(verification.parsed);
 
-        // Extract orderId from callback
+        // Extract additional fields from callback
         let orderId: string | undefined;
+        let acquirerResponseCode: string | undefined;
         if (verification.parsed.kind === 'json' || verification.parsed.kind === 'kv') {
-            const orderIdValue = verification.parsed.value['orderId'];
-            if (typeof orderIdValue === 'string') {
-                orderId = orderIdValue;
+            const value = verification.parsed.value;
+            if (typeof value['orderId'] === 'string') {
+                orderId = value['orderId'];
+            }
+            if (typeof value['acquirerResponseCode'] === 'string') {
+                acquirerResponseCode = value['acquirerResponseCode'];
             }
         }
+
+        // Map outcome to user-facing details
+        const outcomeDetails = mapPaymentOutcome(outcome.responseCode, acquirerResponseCode);
 
         // Generate secure token for result storage
         const token = crypto.randomBytes(16).toString('hex');
@@ -136,8 +146,13 @@ export async function handleNormalReturn(req: Request, res: Response) {
         
         // Store result in memory (TTL handled by store)
         storePaymentResult(token, {
-            status: outcome.status,
+            status: outcomeDetails.status,
+            title: outcomeDetails.title,
+            message: outcomeDetails.message,
+            canRetry: outcomeDetails.canRetry,
+            nextAction: outcomeDetails.nextAction,
             responseCode: outcome.responseCode,
+            acquirerResponseCode,
             transactionReference: outcome.transactionReference,
             customerId: outcome.customerId,
             orderId,
@@ -148,8 +163,9 @@ export async function handleNormalReturn(req: Request, res: Response) {
         return res.redirect(redirectUrl);
     } catch (error) {
         const errorToken = crypto.randomBytes(16).toString('hex');
+        const errorDetails = mapPaymentOutcome(undefined, undefined);
         storePaymentResult(errorToken, {
-            status: 'error',
+            ...errorDetails,
         });
 
         const errorRedirect = env.FRONTEND_BASE_URL 
@@ -375,7 +391,12 @@ export async function getPaymentResult(req: Request, res: Response) {
         return res.status(200).json({
             success: true,
             status: result.status,
+            title: result.title,
+            message: result.message,
+            canRetry: result.canRetry,
+            nextAction: result.nextAction,
             responseCode: result.responseCode,
+            acquirerResponseCode: result.acquirerResponseCode,
             transactionReference: result.transactionReference,
             customerId: result.customerId,
             orderId: result.orderId,

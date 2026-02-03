@@ -1,6 +1,20 @@
+export type PaymentStatus = 
+    | 'success'
+    | 'cancelled'
+    | 'declined'
+    | 'pending'
+    | 'technical_error'
+    | 'configuration_error'
+    | 'unknown';
+
 interface PaymentResult {
-    status: 'success' | 'cancelled' | 'error';
+    status: PaymentStatus;
+    title: string;
+    message: string;
+    canRetry: boolean;
+    nextAction?: 'retry' | 'contact_bank' | 'contact_support' | 'wait' | 'use_another_card';
     responseCode?: string;
+    acquirerResponseCode?: string;
     transactionReference?: string;
     customerId?: string;
     orderId?: string;

@@ -29,16 +29,17 @@ export function calculateOrderTotals(cartItems, country, donationAmount = 0) {
 	// Shipping cost TTC
 	const shippingTTC = getShippingCost(totalItems, country)
 
-	// Donation TTC
+	// Donation TTC (non-taxable)
 	const donationTTC = Number(donationAmount) || 0
+
+	// Calculate HT and VAT (20%) - only on taxable items (products + shipping)
+	const taxableBaseTTC = productsTTC + shippingTTC
+	const totalHT = roundEuro(taxableBaseTTC / 1.20)
+	const totalTVA = roundEuro(taxableBaseTTC - totalHT)
+	const productsHT = roundEuro(productsTTC / 1.20)
 
 	// Total TTC (products + shipping + donation)
 	const totalTTC = roundEuro(productsTTC + shippingTTC + donationTTC)
-
-	// Calculate HT and VAT (20%)
-	const totalHT = roundEuro(totalTTC / 1.20)
-	const totalTVA = roundEuro(totalTTC - totalHT)
-	const productsHT = roundEuro(productsTTC / 1.20)
 
 	return {
 		productsTTC,
