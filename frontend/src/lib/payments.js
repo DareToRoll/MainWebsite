@@ -13,7 +13,7 @@ function getApiBaseUrl() {
 /**
  * Initialize a payment with Sherlock's
  * @param {Object} paymentData - Payment initialization data
- * @param {number} paymentData.amount - Amount in euros (will be converted to cents)
+ * @param {number} paymentData.amount - Amount in cents (integer)
  * @param {string} paymentData.orderId - Unique order identifier
  * @param {string} paymentData.customerEmail - Customer email
  * @returns {Promise<{redirectionUrl: string, redirectionData: string, redirectionVersion: string}>}
@@ -90,4 +90,33 @@ export async function processPayment(paymentData) {
 	} catch (error) {
 		throw error
 	}
+}
+
+/**
+ * Retry a payment using stored order context
+ * @param {string} orderId - Order ID to retry
+ * @returns {Promise<void>}
+ */
+export async function retryPayment(orderId) {
+	const apiBaseUrl = getApiBaseUrl()
+	const response = await fetch(`${apiBaseUrl}/api/payment/retry`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ orderId }),
+	})
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}))
+		throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+	}
+
+	const data = await response.json()
+
+	if (!data.success || !data.redirectionUrl || !data.redirectionData || !data.redirectionVersion) {
+		throw new Error('Invalid response from payment retry')
+	}
+
+	submitPaymentForm(data.redirectionUrl, data.redirectionData, data.redirectionVersion)
 }

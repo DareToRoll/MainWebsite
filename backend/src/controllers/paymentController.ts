@@ -38,6 +38,11 @@ export async function initiatePayment(req: Request, res: Response) {
             });
         }
 
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('[Payment Init] Amount received (cents):', numericAmount);
+            console.log('[Payment Init] Amount in euros:', (numericAmount / 100).toFixed(2));
+        }
+
         // Store order context if provided
         if (orderContext && orderId) {
             storeOrderContext(orderId, orderContext);
@@ -116,6 +121,15 @@ export async function handleNormalReturn(req: Request, res: Response) {
 
         const outcome = sherlockPaypage.getOutcomeFromCallback(verification.parsed);
 
+        // Extract orderId from callback
+        let orderId: string | undefined;
+        if (verification.parsed.kind === 'json' || verification.parsed.kind === 'kv') {
+            const orderIdValue = verification.parsed.value['orderId'];
+            if (typeof orderIdValue === 'string') {
+                orderId = orderIdValue;
+            }
+        }
+
         // Generate secure token for result storage
         const token = crypto.randomBytes(16).toString('hex');
         console.log('[Payment Return] Generated token:', token);
@@ -126,6 +140,7 @@ export async function handleNormalReturn(req: Request, res: Response) {
             responseCode: outcome.responseCode,
             transactionReference: outcome.transactionReference,
             customerId: outcome.customerId,
+            orderId,
         });
 
         const redirectUrl = `${env.FRONTEND_BASE_URL}/payment-result?token=${token}`;
@@ -215,6 +230,8 @@ async function sendConfirmationEmail(orderContext: any): Promise<void> {
         }).format(amount);
     };
 
+    const donation = orderContext.totals.donation || 0;
+
     const dynamicTemplateData = {
         customer: {
             first_name: orderContext.customer.firstName,
@@ -235,6 +252,7 @@ async function sendConfirmationEmail(orderContext: any): Promise<void> {
         totals: {
             subtotal_formatted: formatPrice(orderContext.totals.subtotal),
             shipping_formatted: formatPrice(orderContext.totals.shipping),
+            ...(donation > 0 && { donation_formatted: formatPrice(donation) }),
             tax_formatted: formatPrice(orderContext.totals.tax),
             total_formatted: formatPrice(orderContext.totals.total),
         },
@@ -250,6 +268,73 @@ async function sendConfirmationEmail(orderContext: any): Promise<void> {
         orderContext.customer.email,
         dynamicTemplateData
     );
+}
+
+/**
+ * POST /api/payment/retry
+ * Retry a payment using stored order context
+ */
+export async function retryPayment(req: Request, res: Response) {
+    try {
+        const { orderId } = req.body || {};
+
+        if (!orderId) {
+            return res.status(400).json({
+                error: 'Le champ orderId est obligatoire.',
+            });
+        }
+
+        // Retrieve stored order context
+        const orderContext = getOrderContext(orderId);
+        if (!orderContext) {
+            return res.status(404).json({
+                error: 'Commande introuvable ou expirée.',
+            });
+        }
+
+        // Build callback URLs
+        const protocol = req.get('X-Forwarded-Proto') || req.protocol;
+        const backendBaseUrl = protocol + '://' + req.get('host');
+        const normalReturnUrl = `${backendBaseUrl}/api/payment/return`;
+        const automaticResponseUrl = `${backendBaseUrl}/api/payment/auto`;
+
+        // Calculate amount in cents
+        const amountInCents = Math.round(orderContext.totals.total * 100);
+
+        const response = await sherlockPaypage.initPayment({
+            amount: amountInCents,
+            orderId: orderContext.orderId,
+            customerEmail: orderContext.customer.email,
+            customerContactEmail: orderContext.customer.email,
+            normalReturnUrl,
+            automaticResponseUrl,
+        });
+
+        // Check for init errors
+        if (response.redirectionStatusCode !== '00') {
+            console.error('[Payment Retry] Failed:', response.redirectionStatusCode, response.redirectionStatusMessage);
+            return res.status(400).json({
+                error: `Erreur lors de l'initialisation du paiement: ${response.redirectionStatusMessage ?? response.redirectionStatusCode}`,
+                code: response.redirectionStatusCode,
+            });
+        }
+
+        // Extract redirection fields
+        const redirectionFields = sherlockPaypage.requireInitSuccess(response);
+
+        return res.status(200).json({
+            success: true,
+            redirectionUrl: redirectionFields.redirectionUrl,
+            redirectionData: redirectionFields.redirectionData,
+            redirectionVersion: redirectionFields.redirectionVersion,
+        });
+    } catch (error) {
+        console.error('[Payment Retry] Error:', error);
+        return res.status(500).json({
+            error: "Une erreur s'est produite lors de la réinitialisation du paiement.",
+            details: error instanceof Error ? error.message : String(error),
+        });
+    }
 }
 
 /**
@@ -293,6 +378,7 @@ export async function getPaymentResult(req: Request, res: Response) {
             responseCode: result.responseCode,
             transactionReference: result.transactionReference,
             customerId: result.customerId,
+            orderId: result.orderId,
         });
     } catch (error) {
         console.error('[Payment Result] Error:', error);

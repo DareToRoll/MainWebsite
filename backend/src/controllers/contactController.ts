@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-//import { handleContactMessage } from '../services/mailService'
+import { sendContactNotificationEmail } from '../services/mailService'
 import { sendTestEmail } from '../integrations/sendgridClient'
 
-/* export async function postContact(req: Request, res: Response) {
+export async function postContact(req: Request, res: Response) {
     try {
         const { name, email, topic, message } = req.body || {}
 
@@ -15,24 +15,36 @@ import { sendTestEmail } from '../integrations/sendgridClient'
         const payload = {
             name: String(name).trim(),
             email: String(email).trim(),
-            topic: topic ? String(topic).trim() : 'Non précisé',
+            topic: topic ? String(topic).trim() : 'general',
             message: String(message).trim(),
         }
 
-        if (!payload.email.includes('@')) {
+        if (!payload.name || payload.name.length < 2) {
+            return res.status(400).json({ error: 'Le nom doit contenir au moins 2 caractères.' })
+        }
+
+        if (!payload.email.includes('@') || payload.email.length < 3) {
             return res.status(400).json({ error: 'Adresse e-mail invalide.' })
         }
 
-        await handleContactMessage(payload)
+        if (payload.message.length < 10) {
+            return res.status(400).json({ error: 'Le message doit contenir au moins 10 caractères.' })
+        }
+
+        if (payload.message.length > 5000) {
+            return res.status(400).json({ error: 'Le message est trop long (maximum 5000 caractères).' })
+        }
+
+        await sendContactNotificationEmail(payload)
 
         return res.status(200).json({ success: true })
     } catch (error) {
-        console.error('Erreur postContact:', error)
+        console.error('[Contact] Error:', error)
         return res.status(500).json({
             error: "Une erreur s'est produite lors de l'envoi du message.",
         })
     }
-} */
+}
 
 export async function testSendEmail(req: Request, res: Response) {
     try {

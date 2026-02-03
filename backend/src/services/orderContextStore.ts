@@ -27,6 +27,7 @@ interface OrderContext {
     totals: {
         subtotal: number;
         shipping: number;
+        donation?: number;
         tax: number;
         total: number;
     };

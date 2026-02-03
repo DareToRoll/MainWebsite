@@ -9,10 +9,9 @@ import 'react-phone-number-input/style.css'
 import { useCart } from '../context/CartContext'
 import { processPayment } from '../lib/payments'
 import catalog from '../content/catalog.json'
-import { getShippingCost, runShippingSanityChecks } from '../utils/shipping'
+import { runShippingSanityChecks } from '../utils/shipping'
+import { calculateOrderTotals, formatPrice } from '../utils/pricing'
 import './ConfirmPurchase.css'
-
-const formatPrice = (amount) => `${amount.toFixed(2).replace('.', ',')} €`
 
 const COUNTRY_OPTIONS = ['Monaco', 'France', 'Andorre', 'Suisse']
 
@@ -135,35 +134,23 @@ export default function ConfirmPurchase() {
 
 	const hasItems = entries.length > 0
 
-	const totalPrice = useMemo(
-		() =>
-			entries.reduce((sum, [gameId, quantity]) => {
-				const game = gamesById.get(gameId)
-				if (!game || typeof game.priceValue !== 'number') return sum
-				return sum + game.priceValue * quantity
-			}, 0),
+	const cartItems = useMemo(
+		() => entries.map(([gameId, quantity]) => {
+			const game = gamesById.get(gameId)
+			return {
+				id: gameId,
+				title: game?.title || 'Unknown',
+				quantity,
+				priceValue: game?.priceValue || 0,
+			}
+		}),
 		[entries, gamesById],
 	)
 
-	const totalItems = useMemo(
-		() => entries.reduce((sum, [, quantity]) => sum + quantity, 0),
-		[entries],
+	const totals = useMemo(
+		() => calculateOrderTotals(cartItems, country ?? '', donationAmount),
+		[cartItems, country, donationAmount],
 	)
-
-	const shippingCost = useMemo(
-		() => getShippingCost(totalItems, country ?? ''),
-		[totalItems, country],
-	)
-
-	// TVA 20%: base = products + shipping + donation (all TTC)
-	const donationTTC = useMemo(() => Number(donationAmount) || 0, [donationAmount])
-	const totalTTC = useMemo(
-		() => Math.round((totalPrice + shippingCost + donationTTC) * 100) / 100,
-		[totalPrice, shippingCost, donationTTC],
-	)
-	const totalHT = useMemo(() => Math.round((totalTTC / 1.20) * 100) / 100, [totalTTC])
-	const totalTVA = useMemo(() => Math.round((totalTTC - totalHT) * 100) / 100, [totalTTC, totalHT])
-	const totalPriceHT = useMemo(() => Math.round((totalPrice / 1.20) * 100) / 100, [totalPrice])
 
 	useEffect(() => {
 		if (!hasItems) {
@@ -175,12 +162,12 @@ export default function ConfirmPurchase() {
 		runShippingSanityChecks()
 	}, [])
 
-	// VAT sanity (dev): total TTC = total HT + total TVA; total TTC = products + shipping + donation
+	// VAT sanity (dev)
 	if (import.meta.env?.DEV) {
-		const ttcCheck = Math.abs(totalTTC - (totalHT + totalTVA)) < 0.02
-		const sumCheck = Math.abs(totalTTC - (totalPrice + shippingCost + donationTTC)) < 0.02
+		const ttcCheck = Math.abs(totals.totalTTC - (totals.totalHT + totals.totalTVA)) < 0.02
+		const sumCheck = Math.abs(totals.totalTTC - (totals.productsTTC + totals.shippingTTC + totals.donationTTC)) < 0.02
 		if (!ttcCheck || !sumCheck) {
-			console.warn('[ConfirmPurchase] VAT/total sanity:', { totalTTC, totalHT, totalTVA, totalPrice, shippingCost, donationTTC })
+			console.warn('[ConfirmPurchase] VAT/total sanity:', totals)
 		}
 	}
 
@@ -188,10 +175,8 @@ export default function ConfirmPurchase() {
 		try {
 			setPaymentError(null)
 
-			// Generate a unique order ID
 			const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
 
-			// Build shipping address
 			const shippingAddress = {
 				street: data.street,
 				city: data.city,
@@ -199,7 +184,6 @@ export default function ConfirmPurchase() {
 				country: data.country,
 			}
 
-			// Build billing address (derive from shipping if same, otherwise use billing fields)
 			const billingAddress = data.billingSameAsShipping
 				? shippingAddress
 				: {
@@ -209,27 +193,20 @@ export default function ConfirmPurchase() {
 						country: data.billingCountry,
 					}
 
-			// Build cart items for order context
-			const cartItems = entries.map(([gameId, quantity]) => {
-				const game = gamesById.get(gameId)
-				return {
-					id: gameId,
-					title: game?.title || 'Unknown',
-					quantity,
-					priceValue: game?.priceValue || 0,
-				}
-			})
+			// Recompute totals from form data (single source of truth)
+			const orderTotals = calculateOrderTotals(cartItems, data.country ?? '', Number(data.donationAmount) || 0)
 
-			// Recompute amount to pay from cart + form so it always matches what the user sees (products + shipping + donation)
-			const orderTotalItems = cartItems.reduce((sum, it) => sum + it.quantity, 0)
-			const orderShippingCost = getShippingCost(orderTotalItems, data.country ?? '')
-			const orderDonation = Number(data.donationAmount) || 0
-			const orderProductsTTC = cartItems.reduce((sum, it) => sum + (it.priceValue || 0) * it.quantity, 0)
-			const orderTotalTTC = Math.round((orderProductsTTC + orderShippingCost + orderDonation) * 100) / 100
-			const orderTotalHT = Math.round((orderTotalTTC / 1.20) * 100) / 100
-			const orderTotalTVA = Math.round((orderTotalTTC - orderTotalHT) * 100) / 100
+			if (import.meta.env?.DEV) {
+				console.log('[Payment] Order totals:', {
+					productsTTC: orderTotals.productsTTC,
+					shippingTTC: orderTotals.shippingTTC,
+					donationTTC: orderTotals.donationTTC,
+					totalTVA: orderTotals.totalTVA,
+					totalTTC: orderTotals.totalTTC,
+					amountInCents: orderTotals.amountInCents,
+				})
+			}
 
-			// Build order context
 			const orderContext = {
 				orderId,
 				customer: {
@@ -242,34 +219,30 @@ export default function ConfirmPurchase() {
 				billingAddress: data.billingSameAsShipping ? undefined : billingAddress,
 				items: cartItems,
 				totals: {
-					subtotal: orderTotalHT,
-					shipping: orderShippingCost,
-					donation: orderDonation,
-					tax: orderTotalTVA,
-					total: orderTotalTTC,
+					subtotal: orderTotals.productsTTC,
+					shipping: orderTotals.shippingTTC,
+					donation: orderTotals.donationTTC,
+					tax: orderTotals.totalTVA,
+					total: orderTotals.totalTTC,
 				},
 				donationAnalytics: {
 					donationOptionsOffered: DONATION_OPTIONS.map((o) => o.value),
-					donationSelectedAmount: orderDonation,
-					donationSelectedLabel: DONATION_OPTIONS.find((o) => o.value === Number(data.donationAmount))?.label ?? `${orderDonation} €`,
-					cartTotalTTCBeforeDonation: Math.round((orderProductsTTC + orderShippingCost) * 100) / 100,
-					totalItems: orderTotalItems,
+					donationSelectedAmount: orderTotals.donationTTC,
+					donationSelectedLabel: DONATION_OPTIONS.find((o) => o.value === Number(data.donationAmount))?.label ?? `${orderTotals.donationTTC} €`,
+					cartTotalTTCBeforeDonation: orderTotals.productsTTC + orderTotals.shippingTTC,
+					totalItems: orderTotals.totalItems,
 				},
 			}
 
-			// Montant total à débiter = produits + livraison + don (en centimes pour l'API paiement)
-			const amountInCents = Math.round(orderTotalTTC * 100)
-
-			// Process payment: initialize and redirect to Paypage
+			// Process payment: send amount in cents (products + shipping + donation + VAT)
 			await processPayment({
-				amount: amountInCents,
+				amount: orderTotals.amountInCents,
 				orderId,
 				customerEmail: data.email,
 				orderContext,
 			})
 
-			// Note: User will be redirected to Sherlock's Paypage
-			// After payment, they will be redirected back to /payment-result
+			// User will be redirected to Sherlock's Paypage
 		} catch (error) {
 			console.error('[ConfirmPurchase] Payment error:', error)
 			setPaymentError(error.message || 'Une erreur est survenue lors de l\'initialisation du paiement.')
@@ -293,22 +266,19 @@ export default function ConfirmPurchase() {
 				<div className="confirm-purchase-recap card">
 					<h2 className="confirm-purchase-section-title">Récapitulatif</h2>
 					<ul className="confirm-purchase-items">
-						{entries.map(([gameId, quantity]) => {
-							const game = gamesById.get(gameId)
-							if (!game) return null
-
-							const itemTotal = game.priceValue * quantity
+						{cartItems.map((item) => {
+							const itemTotal = item.priceValue * item.quantity
 
 							return (
-								<li key={gameId} className="confirm-purchase-item">
+								<li key={item.id} className="confirm-purchase-item">
 									<div className="confirm-purchase-item-main">
-										<p className="confirm-purchase-item-title">{game.title}</p>
+										<p className="confirm-purchase-item-title">{item.title}</p>
 										<p className="confirm-purchase-item-price">
-											{game.price} TTC
+											{formatPrice(item.priceValue)} TTC
 										</p>
 									</div>
 									<div className="confirm-purchase-item-quantity">
-										Quantité : {quantity}
+										Quantité : {item.quantity}
 									</div>
 									<div className="confirm-purchase-item-total">
 										{formatPrice(itemTotal)}
@@ -321,34 +291,34 @@ export default function ConfirmPurchase() {
 						<div className="confirm-purchase-totals-line">
 							<span className="confirm-purchase-totals-label">Sous-total HT</span>
 							<span className="confirm-purchase-totals-value">
-								{formatPrice(totalPriceHT)}
+								{formatPrice(totals.productsHT)}
 							</span>
 						</div>
 						<div className="confirm-purchase-totals-line">
 							<span className="confirm-purchase-totals-label">Livraison</span>
 							<span className="confirm-purchase-totals-value">
-								{shippingCost > 0 ? formatPrice(shippingCost) : '—'}
+								{totals.shippingTTC > 0 ? formatPrice(totals.shippingTTC) : '—'}
 							</span>
 						</div>
-						{donationTTC > 0 && (
+						{totals.donationTTC > 0 && (
 							<div className="confirm-purchase-totals-line">
 								<span className="confirm-purchase-totals-label">Don</span>
 								<span className="confirm-purchase-totals-value">
-									{formatPrice(donationTTC)}
+									{formatPrice(totals.donationTTC)}
 								</span>
 							</div>
 						)}
 						<div className="confirm-purchase-totals-line">
 							<span className="confirm-purchase-totals-label">TVA (20%)</span>
 							<span className="confirm-purchase-totals-value">
-								{formatPrice(totalTVA)}
+								{formatPrice(totals.totalTVA)}
 							</span>
 						</div>
 						<div className="confirm-purchase-total">
 							<p className="confirm-purchase-total-label">Total TTC</p>
 							<p className="confirm-purchase-total-amount">
-								{formatPrice(totalTTC)} · {totalItems}{' '}
-								{totalItems <= 1 ? 'article' : 'articles'}
+								{formatPrice(totals.totalTTC)} · {totals.totalItems}{' '}
+								{totals.totalItems <= 1 ? 'article' : 'articles'}
 							</p>
 						</div>
 					</div>
@@ -641,7 +611,7 @@ export default function ConfirmPurchase() {
 
 					<div className="form-group confirm-purchase-donation" data-donation-block>
 						<span className="confirm-purchase-donation-label">
-							Un petit coup de pouce pour nous soutenir, c'est ici :
+							Envie de nous donner un coup de main ? C'est par ici :
 						</span>
 						<Controller
 							name="donationAmount"

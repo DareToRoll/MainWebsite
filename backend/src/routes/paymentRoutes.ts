@@ -1,10 +1,13 @@
 import { Router } from 'express';
-import { initiatePayment, handleNormalReturn, handleAutomaticResponse, getPaymentResult } from '../controllers/paymentController';
+import { initiatePayment, handleNormalReturn, handleAutomaticResponse, getPaymentResult, retryPayment } from '../controllers/paymentController';
 
 const router = Router();
 
 // POST /api/payment/init - Initialize payment and get Sherlock's redirection fields
 router.post('/payment/init', initiatePayment);
+
+// POST /api/payment/retry - Retry payment using stored order context
+router.post('/payment/retry', retryPayment);
 
 // POST /api/payment/return - Handle normalReturnUrl callback (user-facing redirect)
 router.post('/payment/return', (req, res, next) => {

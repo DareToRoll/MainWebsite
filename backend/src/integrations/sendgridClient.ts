@@ -15,25 +15,6 @@ export interface ContactPayload {
     message: string
 }
 
-/* 
-// Uncomment when CONTACT_TO, CONTACT_FROM, and CONTACT_TEMPLATE_ID are added to env.ts
-export async function sendContactMail(data: ContactPayload): Promise<void> {
-    const msg = {
-        to: env.CONTACT_TO,
-        from: env.CONTACT_FROM,
-        templateId: env.CONTACT_TEMPLATE_ID,
-        dynamic_template_data: {
-            name: data.name,
-            email: data.email,
-            topic: data.topic,
-            message: data.message,
-        },
-    }
-    
-    await sgMail.send(msg)
-}
-*/
-
 // Simple test function for sending email
 export async function sendTestEmail(to: string, from: string): Promise<void> {
     const msg = {

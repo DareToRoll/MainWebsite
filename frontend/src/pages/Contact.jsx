@@ -51,7 +51,8 @@ export default function Contact() {
 		}
 
 		try {
-			const response = await fetch('/api/contact', {
+			const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+			const response = await fetch(`${apiBaseUrl}/api/contact`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

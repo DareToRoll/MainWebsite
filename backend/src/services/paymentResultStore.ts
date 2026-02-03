@@ -3,6 +3,7 @@ interface PaymentResult {
     responseCode?: string;
     transactionReference?: string;
     customerId?: string;
+    orderId?: string;
     createdAt: number;
 }
 

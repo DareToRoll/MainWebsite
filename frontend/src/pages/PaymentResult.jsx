@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { retryPayment } from '../lib/payments'
 import './PaymentResult.css'
 
 function getApiBaseUrl() {
@@ -57,6 +58,7 @@ export default function PaymentResult() {
 						responseCode: data.responseCode,
 						transactionReference: data.transactionReference,
 						customerId: data.customerId,
+						orderId: data.orderId,
 					})
 
 					// Clear cart on successful payment
@@ -77,9 +79,12 @@ export default function PaymentResult() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []) // Only run once on mount
 
-	// Countdown timer
+	// Countdown timer (only for success status)
 	useEffect(() => {
 		if (!result || hasNavigatedRef.current) return
+		
+		// Only auto-redirect on success
+		if (result.status !== 'success') return
 
 		timerRef.current = setInterval(() => {
 			setCountdown((prev) => {
@@ -90,7 +95,7 @@ export default function PaymentResult() {
 					}
 					if (!hasNavigatedRef.current) {
 						hasNavigatedRef.current = true
-						navigate(result.status === 'success' ? '/shop' : '/confirm-purchase', { replace: true })
+						navigate('/shop', { replace: true })
 					}
 					return 0
 				}
@@ -106,10 +111,9 @@ export default function PaymentResult() {
 		}
 	}, [result, navigate])
 
-	const handleRedirect = (e) => {
+	const handleRedirect = async (e) => {
 		e.preventDefault()
 		if (hasNavigatedRef.current) return
-		hasNavigatedRef.current = true
 
 		if (timerRef.current) {
 			clearInterval(timerRef.current)
@@ -117,9 +121,25 @@ export default function PaymentResult() {
 		}
 
 		if (result?.status === 'success') {
+			hasNavigatedRef.current = true
 			navigate('/shop', { replace: true })
 		} else {
-			navigate('/confirm-purchase', { replace: true })
+			// Retry payment using stored order context
+			if (result?.orderId) {
+				try {
+					setLoading(true)
+					await retryPayment(result.orderId)
+					// User will be redirected to payment page
+				} catch (error) {
+					console.error('[PaymentResult] Retry error:', error)
+					setError(error.message || 'Erreur lors de la réinitialisation du paiement.')
+					setLoading(false)
+				}
+			} else {
+				// Fallback: navigate to confirm-purchase if no orderId
+				hasNavigatedRef.current = true
+				navigate('/confirm-purchase', { replace: true })
+			}
 		}
 	}
 
@@ -184,10 +204,6 @@ export default function PaymentResult() {
 								Référence de transaction : <strong>{result.transactionReference}</strong>
 							</p>
 						)}
-						<p className="payment-result-redirect">
-							Redirection automatique vers la page de confirmation dans {countdown}{' '}
-							seconde{countdown > 1 ? 's' : ''}...
-						</p>
 					</>
 				)
 
@@ -209,10 +225,6 @@ export default function PaymentResult() {
 						<p className="payment-result-message">
 							Veuillez réessayer ou contacter notre service client si le problème
 							persiste.
-						</p>
-						<p className="payment-result-redirect">
-							Redirection automatique vers la page de confirmation dans {countdown}{' '}
-							seconde{countdown > 1 ? 's' : ''}...
 						</p>
 					</>
 				)
