@@ -23,6 +23,7 @@ app.use(cors({
         'https://payment-webinit.sips-services.com',
         'https://payment-webinit.test.sips-services.com',
         'https://sherlocks-payment-web.secure.lcl.fr',
+        'https://sherlocks-paiement.secure.lcl.fr'
       ];
       
       if (sherlockDomains.some(domain => origin.startsWith(domain))) {
